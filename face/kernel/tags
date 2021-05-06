@@ -1,0 +1,123 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+CheckParamSet	include/face_module.hpp	/^  virtual bool CheckParamSet(const ModuleParamSet &paramSet) const { return true; }$/;"	f	class:facealign::Module
+Connector	include/face_connector.hpp	/^class Connector : public NonCopyable{$/;"	c
+Connector	src/connector.cpp	/^Connector::Connector(const std::string& input_module, $/;"	f	class:Connector
+Create	include/face_module.hpp	/^  Module *Create(const std::string &strTypeName, const std::string &name) {$/;"	f	class:facealign::ModuleCreatorWorker
+Create	include/face_module.hpp	/^  Module *Create(const std::string &strTypeName, const std::string &name) {$/;"	f	class:facealign::ModuleFactory
+CreateObject	include/face_module.hpp	/^  static T *CreateObject(const std::string &name) { return new (std::nothrow) T(name); }$/;"	f	class:facealign::ModuleCreator
+DoProcess	src/face_module.cpp	/^int Module::DoProcess(std::shared_ptr<CNFrameInfo> data) {  \/\/ 不太理解$/;"	f	class:Module
+DoTransmitData	src/face_module.cpp	/^int Module::DoTransmitData(std::shared_ptr<CNFrameInfo> data) {$/;"	f	class:Module
+EVENT_EOS	include/face_common.hpp	/^  EVENT_EOS,      \/\/\/< An EOS event.$/;"	e	enum:EventType
+EVENT_ERROR	include/face_common.hpp	/^  EVENT_ERROR,    \/\/\/< An error event.$/;"	e	enum:EventType
+EVENT_INVALID	include/face_common.hpp	/^  EVENT_INVALID,  \/\/\/< An invalid event type.$/;"	e	enum:EventType
+EVENT_STOP	include/face_common.hpp	/^  EVENT_STOP,     \/\/\/< Stops an event that is called by application layer usually.$/;"	e	enum:EventType
+EVENT_STREAM_ERROR	include/face_common.hpp	/^  EVENT_STREAM_ERROR,  \/\/\/< A stream error event.$/;"	e	enum:EventType
+EVENT_TYPE_END	include/face_common.hpp	/^  EVENT_TYPE_END  \/\/\/< Reserved for your custom events.$/;"	e	enum:EventType
+EVENT_WARNING	include/face_common.hpp	/^  EVENT_WARNING,  \/\/\/< A warning event.$/;"	e	enum:EventType
+Empty	utils/face_queue.hpp	/^    bool Empty() {$/;"	f	class:ThreadSafeQueue
+EmptyQueue	src/connector.cpp	/^std::vector<FramePtr> Connector::EmptyQueue() {$/;"	f	class:Connector
+Event	include/face_eventbus.hpp	/^struct Event {$/;"	s	namespace:facealign
+EventType	include/face_common.hpp	/^enum EventType {$/;"	g
+FACE_COMMON_HPP_	include/face_common.hpp	2;"	d
+FACE_CONNECTOR_HPP_	include/face_connector.hpp	2;"	d
+FACE_EVENTBUS_HPP_	include/face_eventbus.hpp	2;"	d
+FACE_FRAME_HPP_	include/face_frame.hpp	2;"	d
+FACE_MODULE_HPP_	include/face_module.hpp	2;"	d
+FACE_PIPELINE_HPP	include/face_pipeline.hpp	2;"	d
+FACE_QUEUE_HPP_	utils/face_queue.hpp	2;"	d
+FACE_RWLOCK_HPP_	utils/face_rwlock.hpp	2;"	d
+FACE_SPINLOCK_HPP_	utils/face_spinlock.hpp	2;"	d
+Frame	include/face_frame.hpp	/^class Frame {$/;"	c
+GetId	src/face_module.cpp	/^size_t Module::GetId() {$/;"	f	class:Module
+GetModulesMask	include/face_module.hpp	/^  uint64_t GetModulesMask() const { return mask_; }$/;"	f	class:facealign::Module
+GetName	include/face_module.hpp	/^  inline std::string GetName() const { return name_; }$/;"	f	class:facealign::Module
+GetParentIds	include/face_module.hpp	/^  std::vector<size_t> GetParentIds() const { return parent_ids_; }$/;"	f	class:facealign::Module
+GetRegisted	include/face_module.hpp	/^  std::vector<std::string> GetRegisted() {$/;"	f	class:facealign::ModuleFactory
+HasTransmit	include/face_module.hpp	/^  bool HasTransmit() const { return hasTransmit_.load(); }$/;"	f	class:facealign::Module
+IModuleObserver	include/face_module.hpp	/^class IModuleObserver {$/;"	c	namespace:facealign
+Instance	include/face_module.hpp	/^  static ModuleFactory *Instance() {$/;"	f	class:facealign::ModuleFactory
+IsRunning	include/face_pipeline.hpp	/^    inline bool IsRunning() const { return running_; }$/;"	f	class:Pipeline
+Module	include/face_module.hpp	/^  explicit Module(const std::string &name) : name_(name) {}$/;"	f	class:facealign::Module
+Module	include/face_module.hpp	/^class Module {$/;"	c	namespace:facealign
+ModuleCreator	include/face_module.hpp	/^  ModuleCreator() { register_.do_nothing(); }$/;"	f	class:facealign::ModuleCreator
+ModuleCreator	include/face_module.hpp	/^class ModuleCreator {$/;"	c	namespace:facealign
+ModuleCreatorWorker	include/face_module.hpp	/^class ModuleCreatorWorker {$/;"	c	namespace:facealign
+ModuleFactory	include/face_module.hpp	/^  ModuleFactory() {}$/;"	f	class:facealign::ModuleFactory
+ModuleFactory	include/face_module.hpp	/^class ModuleFactory {$/;"	c	namespace:facealign
+NonCopyable	include/face_common.hpp	/^class NonCopyable {$/;"	c
+NotifyObserver	include/face_module.hpp	/^   void NotifyObserver(std::shared_ptr<FaceFrameInfo> data) { \/\/ 这个的作用？IModuleObserver到底是干嘛的？$/;"	f	class:facealign::Module
+OnEos	include/face_module.hpp	/^  virtual void OnEos(const std::string &stream_id) {}$/;"	f	class:facealign::Module
+Pipeline	include/face_pipeline.hpp	/^class Pipeline : private NonCopyable {$/;"	c
+PostEvent	src/face_module.cpp	/^bool Module::PostEvent(Event e) {$/;"	f	class:Module
+PostEvent	src/face_module.cpp	/^bool Module::PostEvent(EventType type, const std::string& msg) {$/;"	f	class:Module
+Push	utils/face_queue.hpp	/^bool ThreadSafeQueue<T>::Push(const T& new_value) {$/;"	f	class:ThreadSafeQueue
+Regist	include/face_module.hpp	/^  bool Regist(const std::string &strTypeName, std::function<Module *(const std::string &)> pFunc) {$/;"	f	class:facealign::ModuleFactory
+Register	include/face_module.hpp	/^    Register() {$/;"	f	struct:facealign::ModuleCreator::Register
+Register	include/face_module.hpp	/^  struct Register {$/;"	s	class:facealign::ModuleCreator
+Rwlock	utils/face_rwlock.hpp	/^  Rwlock() { pthread_rwlock_init(rwlock_, NULL);}$/;"	f	class:Rwlock
+Rwlock	utils/face_rwlock.hpp	/^class Rwlock {$/;"	c
+SetContainer	src/face_module.cpp	/^void Module::SetContainer(Pipeline* container) {$/;"	f	class:Module
+SetObserver	include/face_module.hpp	/^  void SetObserver(IModuleObserver *observer) {$/;"	f	class:facealign::Module
+SetParentId	include/face_module.hpp	/^  void SetParentId(size_t id) {$/;"	f	class:facealign::Module
+Size	utils/face_queue.hpp	/^    size_t Size() {$/;"	f	class:ThreadSafeQueue
+SpinLock	utils/face_spinlock.hpp	/^class SpinLock {$/;"	c
+SpinLockGuard	utils/face_spinlock.hpp	/^  explicit SpinLockGuard(SpinLock& lock) : lock_(lock) { lock_.lock(); }$/;"	f	class:SpinLockGuard
+SpinLockGuard	utils/face_spinlock.hpp	/^class SpinLockGuard {$/;"	c
+Start	src/connector.cpp	/^void Connector::Start() {$/;"	f	class:Connector
+Stop	src/connector.cpp	/^void Connector::Stop() {$/;"	f	class:Connector
+ThreadSafeQueue	utils/face_queue.hpp	/^class ThreadSafeQueue {$/;"	c
+TransmitData	src/face_module.cpp	/^bool Module::TransmitData(std::shared_ptr<CNFrameInfo> data) {$/;"	f	class:Module
+TryPop	utils/face_queue.hpp	/^bool ThreadSafeQueue<T>::TryPop(T& value) {$/;"	f	class:ThreadSafeQueue
+WaitAndPop	utils/face_queue.hpp	/^bool ThreadSafeQueue<T>::WaitAndPop(T& value) {$/;"	f	class:ThreadSafeQueue
+WaitAndTryPop	utils/face_queue.hpp	/^bool ThreadSafeQueue<T>::WaitAndTryPop(T& value, const std::chrono::microseconds wait_time) {$/;"	f	class:ThreadSafeQueue
+arrive_notification_	utils/face_queue.hpp	/^    std::condition_variable arrive_notification_;$/;"	m	class:ThreadSafeQueue
+connector_	include/face_pipeline.hpp	/^    std::unordered_map<std::string, Connector> connector_;$/;"	m	class:Pipeline
+container_lock_	include/face_module.hpp	/^    RwLock container_lock_; \/\/ 这个是干嘛什么？$/;"	m	class:facealign::Module
+data_mutex_	utils/face_queue.hpp	/^    std::mutex data_mutex_;$/;"	m	class:ThreadSafeQueue
+do_nothing	include/face_module.hpp	/^    inline void do_nothing() const {} $/;"	f	struct:facealign::ModuleCreator::Register
+facealign	include/face_eventbus.hpp	/^namespace facealign {$/;"	n
+facealign	include/face_module.hpp	/^namespace facealign {$/;"	n
+factory_	include/face_module.hpp	/^  static ModuleFactory *factory_;$/;"	m	class:facealign::ModuleFactory
+factory_	src/face_module.cpp	/^ModuleFactory* ModuleFactory::factory_ = nullptr;/;"	m	class:ModuleFactory	file:
+id_	include/face_module.hpp	/^   size_t id_ = INVALID_MODULE_ID;$/;"	m	class:facealign::Module
+init	src/pipeline.cpp	/^bool Pipeline::init() {$/;"	f	class:Pipeline
+input_module_	include/face_connector.hpp	/^    std::string input_module_ = "";$/;"	m	class:Connector
+lock	utils/face_spinlock.hpp	/^  void lock() {$/;"	f	class:SpinLock
+lock_	utils/face_spinlock.hpp	/^  SpinLock& lock_;$/;"	m	class:SpinLockGuard
+lock_	utils/face_spinlock.hpp	/^  std::atomic_flag lock_ = ATOMIC_FLAG_INIT;$/;"	m	class:SpinLock
+map_	include/face_module.hpp	/^  std::unordered_map<std::string, std::function<Module *(const std::string &)>> map_;$/;"	m	class:facealign::ModuleFactory
+mask_	include/face_module.hpp	/^   uint64_t mask_ = 0;$/;"	m	class:facealign::Module
+max_size_	include/face_connector.hpp	/^    size_t  max_size_ = 100;$/;"	m	class:Connector
+message	include/face_eventbus.hpp	/^  std::string message;        \/\/\/< Additional event messages.$/;"	m	struct:facealign::Event
+module_id_mask_	include/face_module.hpp	/^   static uint64_t module_id_mask_; \/\/ 详细用法？$/;"	m	class:facealign::Module
+module_id_spinlock_	include/face_module.hpp	/^   static SpinLock module_id_spinlock_; \/\/ 这个是干嘛什么？$/;"	m	class:facealign::Module
+module_name	include/face_eventbus.hpp	/^  std::string module_name;    \/\/\/< The module that posts this event.$/;"	m	struct:facealign::Event
+name_	include/face_module.hpp	/^    std::string name_;$/;"	m	class:facealign::Module
+observer_	include/face_module.hpp	/^   IModuleObserver* observer_; \/\/为什么这里要用指针？$/;"	m	class:facealign::Module
+observer_lock_	include/face_module.hpp	/^   RwLock observer_lock_;$/;"	m	class:facealign::Module
+output_moudule_	include/face_connector.hpp	/^    std::string output_moudule_ = "";$/;"	m	class:Connector
+param_register_	include/face_module.hpp	/^  ParamRegister param_register_;$/;"	m	class:facealign::Module
+parent_ids_	include/face_module.hpp	/^   std::vector<size_t> parent_ids_;$/;"	m	class:facealign::Module
+q_	utils/face_queue.hpp	/^    std::queue<T> q_;$/;"	m	class:ThreadSafeQueue
+queue_	include/face_connector.hpp	/^    ThreadSafeQueue<FramePtr> queue_;$/;"	m	class:Connector
+register_	include/face_module.hpp	/^  static Register register_;$/;"	m	class:facealign::ModuleCreator
+register_	include/face_module.hpp	/^typename ModuleCreator<T>::Register ModuleCreator<T>::register_;$/;"	m	class:facealign::ModuleCreator
+rlock	utils/face_rwlock.hpp	/^  void rlock() { pthread_rwlock_rdlock(&rwlock_);}$/;"	f	class:Rwlock
+running_	include/face_pipeline.hpp	/^    bool running_ = false;$/;"	m	class:Pipeline
+rwlock_	utils/face_rwlock.hpp	/^  pthread_rwlock_t rwlock_;$/;"	m	class:Rwlock
+stream_id	include/face_eventbus.hpp	/^  std::string stream_id;      \/\/\/< The stream that posts this event.$/;"	m	struct:facealign::Event
+thread_id	include/face_eventbus.hpp	/^  std::thread::id thread_id;  \/\/\/< The thread id from which the event is posted.$/;"	m	struct:facealign::Event
+type	include/face_eventbus.hpp	/^  EventType type;             \/\/\/< The event type.$/;"	m	struct:facealign::Event
+unlock	utils/face_spinlock.hpp	/^  void unlock() { lock_.clear(std::memory_order_release); }$/;"	f	class:SpinLock
+~Connector	include/face_connector.hpp	/^    ~Connector() {};$/;"	f	class:Connector
+~IModuleObserver	include/face_module.hpp	/^  virtual ~IModuleObserver() {}$/;"	f	class:facealign::IModuleObserver
+~Module	src/face_module.cpp	/^Module::~Module() {$/;"	f	class:Module
+~ModuleCreator	include/face_module.hpp	/^  virtual ~ModuleCreator() { register_.do_nothing(); }$/;"	f	class:facealign::ModuleCreator
+~ModuleFactory	include/face_module.hpp	/^  virtual ~ModuleFactory() {}$/;"	f	class:facealign::ModuleFactory
+~Rwlock	utils/face_rwlock.hpp	/^  ~Rwlock() { pthread_rwlock_destroy(&rwlock_);}$/;"	f	class:Rwlock
+~SpinLockGuard	utils/face_spinlock.hpp	/^  ~SpinLockGuard() { lock_.unlock(); }$/;"	f	class:SpinLockGuard
