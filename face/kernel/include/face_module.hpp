@@ -52,7 +52,7 @@ class Module {
   //  observer_ = observer;
   //}
 
-  virtual bool Open(ModuleParamSet param_set) = 0; //注意这个函数的使用方式
+  virtual bool Open(ModuleParamSet &param_set) = 0; //注意这个函数的使用方式
 
 
   virtual void Close() = 0;
@@ -63,7 +63,7 @@ class Module {
 
   virtual void OnEos(const std::string &stream_id) {}
 
-  inline std::string GetName() const { return name_; }
+  inline  std::string GetName() const { return name_; }
 
 
  // bool PostEvent(EventType type, const std::string &msg);
@@ -84,7 +84,7 @@ public:
   ParamRegister param_register_;
 
   /* useless for users */
-  size_t GetId(); // 这个做什么的呢？？？？
+  //size_t GetId(); // 这个做什么的呢？？？？
 
   friend class Pipeline;
   friend class FAFrameInfo;

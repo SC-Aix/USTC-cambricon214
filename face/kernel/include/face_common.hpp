@@ -39,9 +39,5 @@ private:
     NonCopyable& operator=(NonCopyable&& ) = delete;
 };
 
-class FAFrame {
-
-};
-
 }
 #endif //  FACE_COMMON_HPP_

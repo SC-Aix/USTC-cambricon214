@@ -14,7 +14,7 @@ void Module::SetContainer(Pipeline* container) {
             RwLockWriteGuard guard(container_lock_);
             container_ = container;
         }
-        GetId();
+       // GetId();
     } else {
       RwLockWriteGuard guard(container_lock_);
       container_ = nullptr;

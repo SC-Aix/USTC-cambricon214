@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "face_common.hpp"
+#include "frame.hpp"
 
 namespace facealign {
 
@@ -41,7 +41,7 @@ class FAFrameInfo : private NonCopyable {
   size_t flags = 0;         ///< the mask for this frame. "FAFrameFlag"
 
   //  user-defined DataFrame, InferResult etc...
-  std::unordered_map<int, FAFrame> datas; // 为什么这里是int？？
+  std::unordered_map<int, std::shared_ptr<FAFrame>> datas; // 为什么这里是int？？
   std::mutex datas_lock_;
 
   //  FAFrameInfo instance of parent pipeline
