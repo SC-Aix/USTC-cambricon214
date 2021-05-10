@@ -86,6 +86,7 @@ int Module::DoProcess(std::shared_ptr<FAFrameInfo> data) {  // 不太理解
       return DoTransmitData(data);
     } else {
       this->OnEos(data->stream_id);*/
+      Process(data);
       return DoTransmitData(data);/*
     }
   } else {

@@ -9,7 +9,8 @@
 #include <utility>
 
 namespace facealign {
-  using  ModuleParamSet = std::unordered_map<std::string, std::string>;
+  
+using  ModuleParamSet = std::unordered_map<std::string, std::string>;
   
 #define CNS_JSON_DIR_PARAM_NAME "json_file_dir" // 什么意思？？？
 
@@ -23,6 +24,10 @@ namespace facealign {
     bool ParseByJSONStr(const std::string &jstr);
     bool ParseByJSONFile(const std::string &jfname);
   };
+
+
+bool ConfigsFromJsonFile(const std::string& config_file, std::vector<FAModuleConfig> pmodule_configs);
+
 
  class ParamRegister {
   private:
@@ -52,8 +57,6 @@ namespace facealign {
     
  };
 
-
-bool ConfigsFromJsonFile(const std::string& config_file, std::vector<FAModuleConfig> pmodule_configs);
 
 }
 #endif // !FACE_CONFIG_HPP_

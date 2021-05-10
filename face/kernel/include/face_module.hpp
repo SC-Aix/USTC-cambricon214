@@ -52,7 +52,7 @@ class Module {
   //  observer_ = observer;
   //}
 
-  virtual bool Open(ModuleParamSet &param_set) = 0; //注意这个函数的使用方式
+  virtual bool Open(ModuleParamSet param_set) = 0; //注意这个函数的使用方式
 
 
   virtual void Close() = 0;
@@ -63,7 +63,7 @@ class Module {
 
   virtual void OnEos(const std::string &stream_id) {}
 
-  inline  std::string GetName() const { return name_; }
+  inline  const std::string& GetName() const { return name_; }
 
 
  // bool PostEvent(EventType type, const std::string &msg);
@@ -181,6 +181,8 @@ class ModuleFactory {
   Module *Create(const std::string &strTypeName, const std::string &name) {
     auto iter = map_.find(strTypeName);
     if (iter == map_.end()) {
+      std::cout << "nothat construct" << std::endl;
+      std::cout << "-----------is_in" << map_.count("facealign::Source") << std::endl;
       return (nullptr);
     } else {
       return (iter->second(name));
@@ -206,6 +208,7 @@ class ModuleFactory {
   std::unordered_map<std::string, std::function<Module *(const std::string &)>> map_;
 };
 
+//ModuleFactory* ModuleFactory::factory_
 /**
  * @brief ModuleCreator
  *   A concrete ModuleClass needs to inherit ModuleCreator to enable reflection mechanism.
@@ -225,11 +228,14 @@ class ModuleCreator {
       // in this format?:     szDemangleName =  typeid(T).name();
       szDemangleName = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, nullptr);
 #endif
+      
+
       if (nullptr != szDemangleName) {
         strTypeName = szDemangleName;
         free(szDemangleName);
       }
-      ModuleFactory::Instance()->Regist(strTypeName, CreateObject);
+      std::cout << "--------------" << strTypeName.substr(11) << std::endl;
+      ModuleFactory::Instance()->Regist(strTypeName.substr(11), CreateObject);
     }
     inline void do_nothing() const {} 
   };

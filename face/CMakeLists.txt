@@ -33,21 +33,22 @@ else()
   set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 
-set(CMAKE_CXX_FLAGS "-fPIC -Wall -Werror -std=c++11")
+set(CMAKE_CXX_FLAGS "-fPIC -lpthread -Wall -Werror -std=c++11 ")
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -DNDEBUG -O3")
 
 set(module_list "")
 
-list(APPEND  module_list feature_extract)
+list(APPEND  module_list feature_extract decoder show)
 # add head file search path
 
 find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
   message("Opencv found!")
   include_directories(${OpenCV_INCLUDE_DIRS})
-  message("${OpenCV_INCLUDE_DIRS}----------------")
 endif()
+
+find_package(Threads)
 
 foreach(module ${module_list})
   include_directories(${PROJECT_SOURCE_DIR}/modules/${module}/include)
@@ -58,6 +59,7 @@ endforeach()
 include_directories(${PROJECT_SOURCE_DIR}/kernel/include)
 include_directories(${PROJECT_SOURCE_DIR}/kernel/utils)
 include_directories(${PROJECT_SOURCE_DIR}/3rdparty/)
+include_directories(${PROJECT_SOURCE_DIR}/modules/)
 
 file(GLOB_RECURSE kernels ${PROJECT_SOURCE_DIR}/kernel$/src/*.cpp)
 list(APPEND srcs ${module_src})
@@ -68,6 +70,7 @@ set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui opencv_features2d open
 list(APPEND srcs ${PROJECT_SOURCE_DIR}/modules/main.cpp)
 
 add_executable(face ${srcs})
-target_link_libraries(face ${OpenCV_LIBS})
+target_link_libraries(face ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} face_kernel)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/kernel)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/modules)

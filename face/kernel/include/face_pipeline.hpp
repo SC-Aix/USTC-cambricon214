@@ -101,7 +101,9 @@ class Pipeline : private NonCopyable {
   int AddModuleConfig(const FAModuleConfig& config);
   int BuildPipeline(const std::vector<FAModuleConfig>& module_configs);
   int BuildPipelineByJSONFile(const std::string& config_file);
-  Module* GetModule(const std::string& name);
+  Module* GetModule(const std::string& name) { 
+    return modules_map[name].get();
+   };
   ModuleParamSet GetModuleParamSet(const std::string &module_name);
   FAModuleConfig GetModuleConfig(const std::string &module_name);
   bool AddModule(std::shared_ptr<Module> module);

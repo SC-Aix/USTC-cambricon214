@@ -1,13 +1,21 @@
 #include "source.hpp"
 
 namespace facealign {
-
+int DecoderOpencv::count = 0;
 
  Source::Source(const std::string& name) : Module(name) {
  }
 
- bool Source::Open(ModuleParamSet& parameters) {
-   if (parameters.find("decoder_type")) {
+ void Source::Close() {
+   std::cout << "this close!" << std::endl;
+ }
+
+ bool Source::CheckParamSet(const ModuleParamSet& parameters) const { // cosnt 必须加
+   return true;
+ }
+
+ bool Source::Open(ModuleParamSet parameters) {
+   if (parameters.find("decoder_type") != parameters.end()) {
      if(parameters["decoder_type"] == "opencv")
      param.type = FFOPENCV;
      else if (parameters["decoder_type"] == "rtsp")
@@ -18,6 +26,7 @@ namespace facealign {
      }
      return true;
    }
+   return false;
  }
 
  int Source::Process(std::shared_ptr<FAFrameInfo> data) {
@@ -25,9 +34,6 @@ namespace facealign {
    return 0;
  }
 
- bool Source::CheckParamSet(const ModuleParamSet& parameters) {
-   return true;
- }
 
  bool Source::AddDecoder() {
    if (param.type == FFOPENCV) {
@@ -45,41 +51,43 @@ void Source::Loop() {
 }
 
 void DecoderOpencv::GetFiles(const std::string& path, std::vector<std::string>& files) {
-    long hFile = 0;
-    struct _finddata_t fileinfo;
-    std::string p;
-    if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo) != -1)) {
-      do {
-        if ((fileinfo.attrib & _A_SUBDIR)) {
-          if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
-            GetFiles(p.assign(path).append("\\").append(fileinfo.name), files);
-        } else {
-          files.push_back(p.assign(path).append("\\").append(fileinfo.name));
-        }
-      } while (_findnext(hFile, &fileinfo) == 0);
-      _findclose(hFile);
-    }
-  }
+  struct dirent *ptr = nullptr;
+  DIR *dir;
+  dir = opendir(path.c_str());
+  if (dir == nullptr) std::cout << "data directory is wrong!" << std::endl;
 
-std::shared_ptr<FAFrame> CreateFrame() {
-  return new (std::nothrow) FAFrame(*(this->mat_ptr));
+  while ((ptr = readdir(dir)) != nullptr) {
+    if (ptr->d_name[0] == '.')
+    continue;
+    files.push_back(path + ptr->d_name);
+  }
+}
+
+std::shared_ptr<FAFrame> DecoderOpencv::CreateFrame() {
+  return std::shared_ptr<FAFrame>(new (std::nothrow) FrameOpencv(mat_ptr));
 }
 
 void DecoderOpencv::DecoderImg(const std::string& path) {
   auto frameinfo = FAFrameInfo::Create();
-  cv::Mat data_img;
-  cv::imread(data_img, path);
-  mat_ptr.reset(&data_img);
+  cv::Mat *img = mat_ptr.get();
+  std::cout << path << std::endl;
+  *img = cv::imread(path);
+  //mat_ptr = data_img;
   auto frame = CreateFrame();
-  frameinfo->datas.insert(std::make_shared(count++, frame));
+  frameinfo->datas.insert(std::make_pair(count, frame));
+  std::cout << "in source DecoderImg" << std::endl;
   source_module->DoProcess(frameinfo);
+  //mat_ptr.reset();
 }
 
 void DecoderOpencv::Loop() {
+  std::cout << "in DecoderOpencv Loop, files is : " << files.size() << std::endl;
   for (auto &s : files) {
     DecoderImg(s);
     //是否需要sleep？？
   }
 }
+
+
 
 } //namespace

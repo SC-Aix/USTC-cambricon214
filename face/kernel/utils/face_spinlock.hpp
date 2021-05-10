@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <atomic>
 
+namespace facealign {
+
 class SpinLock {
  public:
   void lock() {
@@ -25,4 +27,5 @@ class SpinLockGuard {
   SpinLock& lock_;
 };
 
+}
 #endif  // FACE_SPINLOCK_HPP_

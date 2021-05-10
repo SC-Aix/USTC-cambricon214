@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "frame.hpp"
+#include "face_common.hpp"
 
 namespace facealign {
 

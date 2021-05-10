@@ -4,8 +4,12 @@
 #include <rapidjson/writer.h>
 
 #include <algorithm>
-#include <iostream>
+#include <chrono>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -89,10 +93,9 @@ namespace facealign
     return true;
   }
 
-  bool ConfigsFromJsonFile(const std::string& config_file,
-    std::vector<FAModuleConfig>* pmodule_configs)
+  bool ConfigsFromJsonFile(const std::string& config_file, std::vector<FAModuleConfig> pmodule_configs)
   {
-    auto& module_configs = *pmodule_configs;
+    auto& module_configs = pmodule_configs;
 
     std::ifstream ifs(config_file);
     if (!ifs.is_open())

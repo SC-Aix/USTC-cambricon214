@@ -5,15 +5,15 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#include "cnrt.h"
+//#include "cnrt.h"
 
 namespace facealign {
-class Frame {
+class FAFrame {
 public:
   //Frame(cv::Mat image) : image_data(image) {}
-  Frame() {}
+  FAFrame() {}
 
-  ~Frame() {};
+  ~FAFrame() {}
 
   void* GetFrameCpuData();
   void* GetFrameMluData();
@@ -23,12 +23,12 @@ protected:
   void* mlu_data = nullptr;
 };
 
-class FrameOpencv : public Frame {
+class FrameOpencv : public FAFrame {
 
 public:
-  explicit FrameOpencv(cv::Mat image) : image_data(image) {
-    size_ = image_data.rows * image_data.cols 
-      * image_data.channels * image_data.depth();
+  explicit FrameOpencv(std::shared_ptr<cv::Mat> ptr) : image_ptr(ptr) {
+    size_ = image_ptr->rows * image_ptr->cols 
+      * image_ptr->channels() * image_ptr->depth();
   }
   void Cpu2Mlu();
   void Mlu2Cpu();
@@ -37,7 +37,7 @@ public:
   void SetMluPtr();
 
 public:
-  cv::Mat image_data;
+  std::shared_ptr<cv::Mat> image_ptr;
   size_t size_ = 0;
 };
 

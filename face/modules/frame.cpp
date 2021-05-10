@@ -1,4 +1,5 @@
-#include "frame.h"
+#include "frame.hpp"
+
 namespace facealign {
 void* Frame::GetFrameCpuData() {
   return cpu_data;
@@ -9,11 +10,11 @@ void* Frame::GetFrameMluData() {
 }
 
 void FrameOpencv::Cpu2Mlu() {
-  cnrtMemcopy(mlu_data, cpu_data, size, type);
+  //cnrtMemcopy(mlu_data, cpu_data, size, type);
 }
 
 void FrameOpencv::Mlu2Cpu() {
-  cnrtMemcopy(cpu_data, mlu_data, size, type)
+  //cnrtMemcopy(cpu_data, mlu_data, size, type)
 }
 
 void FrameOpencv::SetCpuPtr() {
@@ -21,7 +22,7 @@ void FrameOpencv::SetCpuPtr() {
 }
 
 void FrameOpencv::SetMluPtr() {
-  cnrtMalloc(&Mlu2Cpu, size);
-  Cpu2Mlu();
+  //cnrtMalloc(&Mlu2Cpu, size);
+  //Cpu2Mlu();
 }
 }

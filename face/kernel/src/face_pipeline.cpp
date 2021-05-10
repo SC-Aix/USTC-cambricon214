@@ -11,7 +11,7 @@ namespace facealign {
 
   bool Pipeline::ProvideData(const Module* module, std::shared_ptr<FAFrameInfo> data) {
     std::string moduleName = module->GetName();
-  
+    std::cout << "In ProvideData funtion" << std::endl;
     if (modules_map.find(moduleName) == modules_map.end())return false;
   
     TransmitData(moduleName, data);
@@ -29,12 +29,13 @@ namespace facealign {
     module->SetContainer(this);
     ConnectorInfo link_connector;
     modules_conector_.insert(std::make_pair(moduleName, std::make_shared<ConnectorInfo>(link_connector)));
+    modules_map[moduleName] = module;
     return true;
   }
 
   bool Pipeline::SetModuleAttribute(std::shared_ptr<Module> module, size_t queue_capacity) {
     std::string moduleName = module->GetName();
-    if (modules_conector_.find(moduleName) != modules_conector_.end())return false;
+    if (modules_conector_.find(moduleName) == modules_conector_.end())return false;
     modules_conector_[moduleName]->connector = std::make_shared<Connector>(queue_capacity);
     return true;
   }
@@ -44,7 +45,6 @@ namespace facealign {
       std::cout << "upnode or downnode is nullptr";
       return false;
     }
-
     std::string up_node_name = up_node->GetName();
     std::string down_node_name = down_node->GetName();
 
@@ -87,7 +87,7 @@ namespace facealign {
       it.second->connector->Start();
     }
     
-    for (auto &it : modules_conector_) {
+    for (auto &it : modules_conector_) { 
       threads_.push_back(std::thread(&Pipeline::TaskLoop, this, it.first)); // 这个this 是做什么用的呢。
     }
 
@@ -124,17 +124,26 @@ namespace facealign {
     auto module_ = modules_map[module_name];
     auto& module_info = modules_conector_[module_name];
     std::shared_ptr<Connector> connector = module_info->connector;
+    
     while(1) {
       FramePtr data = nullptr;
+      //if (!connector->IsStop())
+      
       while (!connector->IsStop() && data == nullptr) {
         data = connector->GetData();
       }
 
+      std::cout << "in here before stop " << std::endl;
       if (connector->IsStop()) {
         break;
       }
-
-      if (data == nullptr) continue;
+      std::cout << "in here behind stop" << std::endl;
+      
+      if (data == nullptr) {
+        std::cout << "data is nullptr in taskloop" << std::endl;
+        continue;
+      }
+      
       int ret = module_->DoProcess(data);
       if (ret < 0) {
         std::cout << module_name << " process data failed!" << std::endl;
@@ -145,6 +154,7 @@ namespace facealign {
   }
 
   void Pipeline::TransmitData(const std::string &module_name, std::shared_ptr<FAFrameInfo> data) {
+    std::cout << "In TransmitData function" << std::endl;
     if (modules_conector_.find(module_name) == modules_conector_.end()) {
       std::cout << "TransmitData, module connector is not found!" << std::endl;
     }
@@ -155,6 +165,7 @@ namespace facealign {
       assert(0 < down_node_info->input_connectors.size());
 
       while (!down_node_info->connector->PushData(data) && !down_node_info->connector->IsStop()) {
+        std::cout << "current module name in" << module_name << std::endl;
         std::this_thread::sleep_for(std::chrono::microseconds(20));
       }
     }
@@ -199,11 +210,16 @@ namespace facealign {
         std::cout << "error occurs in creating module, name: " << v.className << std::endl;
       }
       this->AddModule(instance);
+      std::cout << "v.queuqe" << v.queue_capicity << std::endl;
       this->SetModuleAttribute(instance, v.queue_capicity);
       modules.push_back(instance);
     }
 
     for (auto& v : module_configs) {
+      if(v.next.empty()) {
+        std::cout << "this is end node!" << std::endl;
+        continue;
+      }
       if (modules_map.find(v.name) == modules_map.end() || 
           modules_map.find(v.next[0]) == modules_map.end()) {
         std::cout << "module has not been added!" << std::endl;
