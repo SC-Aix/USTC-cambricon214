@@ -34,7 +34,8 @@ namespace facealign {
     int Process(std::shared_ptr<FAFrameInfo> data) override;
     bool CheckParamSet(const ModuleParamSet& parameters) const override;
     bool AddDecoder();
-    void Loop();
+    void ImgLoop();
+    void VideoLoop();
     Decoder* GetDecoder() { return decoder_;}
   private:
     Decoder* decoder_ = nullptr;
@@ -45,7 +46,8 @@ namespace facealign {
   public:
     virtual void DecoderImg(const std::string& path) = 0;
     virtual std::shared_ptr<FAFrame> CreateFrame() = 0;
-    virtual void Loop() = 0;
+    virtual void ImgLoop() = 0;
+    virtual void VideoLoop() = 0;
   protected:
     Source* source_module = nullptr;
     Decoder(Source* ptr) { source_module = ptr; }
@@ -56,9 +58,11 @@ namespace facealign {
     DecoderOpencv(Source* ptr) : Decoder(ptr) { mat_ptr = std::make_shared<cv::Mat>();};
     void DecoderImg(const std::string& path) override;
     std::shared_ptr<FAFrame> CreateFrame() override;
-    virtual void Loop() override;
+    virtual void ImgLoop() override;
     static void GetFiles(const std::string& path, std::vector<std::string> &files);
     void AddFiles(const std::string &path) { GetFiles(path, files);}
+    void DecoderVideo(const std::string &path);
+    void VideoLoop() override;
   private:
     static int count;
     std::shared_ptr<cv::Mat> mat_ptr = nullptr;

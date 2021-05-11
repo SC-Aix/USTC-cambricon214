@@ -38,6 +38,7 @@ public:
 
 public:
   std::shared_ptr<cv::Mat> image_ptr;
+  std::shared_ptr<cv::Mat> detect_post_ptr;
   size_t size_ = 0;
 };
 

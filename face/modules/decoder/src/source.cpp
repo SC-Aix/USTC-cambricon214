@@ -46,8 +46,12 @@ int DecoderOpencv::count = 0;
    return true;
  }
 
-void Source::Loop() {
-  decoder_->Loop();
+void Source::ImgLoop() {
+  decoder_->ImgLoop();
+}
+
+void Source::VideoLoop() {
+  decoder_->VideoLoop();
 }
 
 void DecoderOpencv::GetFiles(const std::string& path, std::vector<std::string>& files) {
@@ -80,7 +84,7 @@ void DecoderOpencv::DecoderImg(const std::string& path) {
   //mat_ptr.reset();
 }
 
-void DecoderOpencv::Loop() {
+void DecoderOpencv::ImgLoop() {
   std::cout << "in DecoderOpencv Loop, files is : " << files.size() << std::endl;
   for (auto &s : files) {
     DecoderImg(s);
@@ -88,6 +92,30 @@ void DecoderOpencv::Loop() {
   }
 }
 
+void DecoderOpencv::DecoderVideo(const std::string& path) {
+  cv::VideoCapture cap(path);
+  if (!cap.isOpened()) {
+    std::cerr << "cannot open a camera or file" << std::endl;
+    return;
+  }
+  cv::Mat *img = mat_ptr.get();  
+  while(1) {
+    cap >> *img;
+    if (img->empty()) {
+      break;
+    }  
+    auto frameinfo = FAFrameInfo::Create();
+    auto frame = CreateFrame();
+    frameinfo->datas.insert(std::make_pair(count, frame));
+    std::cout << "in source DecoderImg" << std::endl;
+    source_module->DoProcess(frameinfo);
+  }  
+}
 
+void DecoderOpencv::VideoLoop() {
+  for (auto &s : files) {
+    DecoderVideo(s);
+  }
+}
 
 } //namespace

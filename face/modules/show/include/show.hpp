@@ -12,7 +12,8 @@ namespace facealign {
 
 class Show : public Module, public ModuleCreator<Show> {
   public:
-    Show(const std::string& name) : Module(name){}
+    Show(const std::string& name) : Module(name){cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );}
+    ~Show() { cv::destroyWindow("Display window");}
     bool Open(ModuleParamSet parameters) override { return true; };
     void Close() override {};
     int Process(std::shared_ptr<FAFrameInfo> data) override;

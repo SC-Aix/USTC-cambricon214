@@ -39,7 +39,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -DNDEBUG -O3")
 
 set(module_list "")
 
-list(APPEND  module_list feature_extract decoder show)
+list(APPEND  module_list feature_extract decoder show inference)
 # add head file search path
 
 find_package(OpenCV REQUIRED)
@@ -59,6 +59,7 @@ endforeach()
 include_directories(${PROJECT_SOURCE_DIR}/kernel/include)
 include_directories(${PROJECT_SOURCE_DIR}/kernel/utils)
 include_directories(${PROJECT_SOURCE_DIR}/3rdparty/)
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/include)
 include_directories(${PROJECT_SOURCE_DIR}/modules/)
 
 file(GLOB_RECURSE kernels ${PROJECT_SOURCE_DIR}/kernel$/src/*.cpp)
@@ -70,7 +71,7 @@ set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui opencv_features2d open
 list(APPEND srcs ${PROJECT_SOURCE_DIR}/modules/main.cpp)
 
 add_executable(face ${srcs})
-target_link_libraries(face ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} face_kernel)
+target_link_libraries(face ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} face_kernel easydk)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/kernel)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/modules)

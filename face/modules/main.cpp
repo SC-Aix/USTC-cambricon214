@@ -34,8 +34,8 @@ int main () {
   auto source_ = dynamic_cast<facealign::Source* >(source);
   source_->AddDecoder();
   auto decoder_ = dynamic_cast<facealign::DecoderOpencv* >(source_->GetDecoder());
-  decoder_->AddFiles("/home/cambricon/workspace/USTC-cambricon214/face/data/");
-  decoder_->Loop();
+  decoder_->AddFiles("/home/cambricon/workspace/USTC-cambricon214/face/data/video/");
+  decoder_->VideoLoop();
   std::this_thread::sleep_for(std::chrono::seconds(1000));
   pipeline.Stop();
 
