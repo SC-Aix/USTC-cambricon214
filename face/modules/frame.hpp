@@ -8,6 +8,14 @@
 //#include "cnrt.h"
 
 namespace facealign {
+
+struct DetectObjs {
+  float x = 0.0;
+  float y = 0.0;
+  float w = 0.0;
+  float h = 0.0;
+  float score = 0.0;
+};
 class FAFrame {
 public:
   //Frame(cv::Mat image) : image_data(image) {}
@@ -37,6 +45,7 @@ public:
   void SetMluPtr();
 
 public:
+  DetectObjs detect_obj;
   std::shared_ptr<cv::Mat> image_ptr;
   std::shared_ptr<cv::Mat> detect_post_ptr;
   size_t size_ = 0;

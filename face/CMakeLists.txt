@@ -56,13 +56,20 @@ foreach(module ${module_list})
   list(APPEND srcs ${module_src})
 endforeach()
 
+# inference postprocess
+include_directories(${PROJECT_SOURCE_DIR}/modules/inference/postproc/)
+file(GLOB_RECURSE module_src ${PROJECT_SOURCE_DIR}/modules/inference/postproc/*.cpp)
+
 include_directories(${PROJECT_SOURCE_DIR}/kernel/include)
 include_directories(${PROJECT_SOURCE_DIR}/kernel/utils)
-include_directories(${PROJECT_SOURCE_DIR}/3rdparty/)
+#include_directories(${PROJECT_SOURCE_DIR}/3rdparty/)
+
 include_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/include)
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/infer_server/include)
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/infer_server/contrib)
 include_directories(${PROJECT_SOURCE_DIR}/modules/)
 
-file(GLOB_RECURSE kernels ${PROJECT_SOURCE_DIR}/kernel$/src/*.cpp)
+file(GLOB_RECURSE kernels ${PROJECT_SOURCE_DIR}/kernel/src/*.cpp)
 list(APPEND srcs ${module_src})
 
 
@@ -70,8 +77,12 @@ set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui opencv_features2d open
 
 list(APPEND srcs ${PROJECT_SOURCE_DIR}/modules/main.cpp)
 
+link_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/)
+
 add_executable(face ${srcs})
-target_link_libraries(face ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} face_kernel easydk)
+target_link_libraries(face ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} face_kernel easydk cnis)
+#target_link_libraries(face ${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/libeasydk.so)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/kernel)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/easydk)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/modules)
