@@ -30,7 +30,7 @@ int DecoderOpencv::count = 0;
  }
 
  int Source::Process(std::shared_ptr<FAFrameInfo> data) {
-   std::cout << "this is source module, Process be invoke!" << std::endl;
+  // std::cout << "this is source module, Process be invoke!" << std::endl;
    return 0;
  }
 
@@ -68,7 +68,7 @@ void DecoderOpencv::GetFiles(const std::string& path, std::vector<std::string>& 
 }
 
 std::shared_ptr<FAFrame> DecoderOpencv::CreateFrame() {
-  return std::shared_ptr<FAFrame>(new (std::nothrow) FrameOpencv(mat_ptr));
+  return std::shared_ptr<FAFrame>(new (std::nothrow) FrameOpencv(std::move(mat_ptr)));
 }
 
 void DecoderOpencv::DecoderImg(const std::string& path) {
@@ -98,21 +98,32 @@ void DecoderOpencv::DecoderVideo(const std::string& path) {
     std::cerr << "cannot open a camera or file" << std::endl;
     return;
   }
-  cv::Mat *img = mat_ptr.get();  
-  while(1) {
+  //cv::Mat *img = mat_ptr.get();  
+  bool flag = true;
+
+  while (flag) {
+    mat_ptr = std::make_shared<cv::Mat>();
+    cv::Mat *img = mat_ptr.get(); 
     cap >> *img;
-    if (img->empty()) {
-      break;
-    }  
+    
+    if (img->rows <= 0 || img->cols <= 0) {
+      flag = false;
+      continue;
+    } 
     auto frameinfo = FAFrameInfo::Create();
     auto frame = CreateFrame();
+    if (frame == nullptr) {
+      std::cout << "*************create frame failed!****************" << std::endl;
+    }
     frameinfo->datas.insert(std::make_pair(count, frame));
-    std::cout << "in source DecoderImg" << std::endl;
     source_module->DoProcess(frameinfo);
-  }  
+  }
+  
+  cap.release();
 }
 
 void DecoderOpencv::VideoLoop() {
+  std::cout << "files size : "<<files.size() << std::endl;
   for (auto &s : files) {
     DecoderVideo(s);
   }

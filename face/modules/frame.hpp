@@ -15,6 +15,7 @@ struct DetectObjs {
   float w = 0.0;
   float h = 0.0;
   float score = 0.0;
+  cv::Mat obj;
 };
 class FAFrame {
 public:
@@ -45,9 +46,9 @@ public:
   void SetMluPtr();
 
 public:
-  DetectObjs detect_obj;
-  std::shared_ptr<cv::Mat> image_ptr;
-  std::shared_ptr<cv::Mat> detect_post_ptr;
+  std::vector<std::shared_ptr<DetectObjs>> detect_objs;
+  std::shared_ptr<cv::Mat> image_ptr = nullptr;
+  std::shared_ptr<cv::Mat> detect_post_ptr = nullptr;
   size_t size_ = 0;
 };
 

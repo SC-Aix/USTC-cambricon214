@@ -19,6 +19,18 @@ find_package(OpenCV REQUIRED)
 #if(imgcodecs_FOUND)
 #  list(APPEND OpenCV_LIBS optional_opencv_libs)
 #endif()
+if(NOT DEFINED ENV{NEUWARE_HOME})
+  set(ENV{NEUWARE_HOME} /usr/local/neuware)
+endif()
+message("-------------------$ENV{NEUWARE_HOME}")
+#if(MLU_PLATFORM STREQUAL MLU270 OR MLU_PLATFORM STREQUAL MLU220_SOC OR MLU_PLATFORM STREQUAL MLU220)
+list(APPEND CN_LIBS easydk cnis cnrt cncodec cndrv)
+#else()
+ #uiendif()
+
+include_directories("$ENV{NEUWARE_HOME}/include")
+link_directories("$ENV{NEUWARE_HOME}/lib64")
+
 
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -80,7 +92,7 @@ list(APPEND srcs ${PROJECT_SOURCE_DIR}/modules/main.cpp)
 link_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/)
 
 add_executable(face ${srcs})
-target_link_libraries(face ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} face_kernel easydk cnis)
+target_link_libraries(face ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} face_kernel  ${CN_LIBS})
 #target_link_libraries(face ${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/libeasydk.so)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/kernel)

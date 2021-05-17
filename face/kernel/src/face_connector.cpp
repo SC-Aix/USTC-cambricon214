@@ -21,24 +21,28 @@ void Connector::Stop() {
 }
 
 FramePtr Connector::GetData() {
-  std::lock_guard<std::mutex> lk(size_lock_);
-   FramePtr data;
+ // std::lock_guard<std::mutex> lk(size_lock_);
+   FramePtr data = nullptr;
    if(queue_.WaitAndTryPop(data, std::chrono::microseconds(1000))) {
      current_size_--;
    }
+   /*
+   if(data == nullptr) {
+     std::cout << "@@#@##@#@#" << std::endl;
+   }*/
    return data;
 }
 
 bool Connector::PushData(std::shared_ptr<FAFrameInfo> frame) {
-  std::lock_guard<std::mutex> lk(size_lock_);
+  //std::lock_guard<std::mutex> lk(size_lock_);
   if (current_size_ + 1 > max_size_) {
-    std::cout << "current_size" << current_size_ << std::endl;
-    std::cout << "max_size" << max_size_ << std::endl;
-    std::cout << "queue is full!" << std::endl;
+    //std::cout << "current_size" << current_size_ << std::endl;
+   // std::cout << "max_size" << max_size_ << std::endl;
+   // std::cout << "queue is full!" << std::endl;
     return false;
-  }
-  current_size_++;
+  }  
   queue_.Push(frame);
+  current_size_++;
   return true;
 }
 

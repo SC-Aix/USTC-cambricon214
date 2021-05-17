@@ -27,8 +27,13 @@ class Inference : public Module, public ModuleCreator<Inference> {
                            std::shared_ptr<FAFrameInfo> data_);
     infer_server::Session_t CreateSession();
     bool MoveDataPostproc(infer_server::InferData* output_data, const infer_server::ModelIO& model_output);
-  
+    cv::Mat ExpandImage(cv::Mat input_img);
+    int Preproc(const cv::Mat &input, cv::Mat *output, const infer_server::ModelPtr &model);
+    bool Dopreproc(infer_server::ModelIO* dst, const infer_server::InferData& src,
+                                   const infer_server::ModelInfo& model_info);
+
   public:
+    //bool is_init = false; 
     int dev_id = 0;
     std::string model_path = "";
     std::string model_name = "subnet0";

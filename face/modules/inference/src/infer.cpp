@@ -1,7 +1,10 @@
+#include "time.h"
+#include "infer.hpp"
 
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/imgcodecs/imgcodecs.hpp"
+
 
 #define CLIP(x) ((x) < 0 ? 0 : ((x) > 1 ? 1 : (x)))
 
@@ -10,6 +13,47 @@ namespace facealign {
 //bool Inference::Preprocess() {
 
 //}
+static bool FloatEQ(float a, float b) { return std::abs(a - b) < 1E-5; }
+cv::Mat Inference::ExpandImage(cv::Mat input_img) {
+  // expand input image to 16:9
+  int expand_cols = 0, expand_rows = 0;
+  if ((static_cast<float>(input_img.cols) / 16 > static_cast<float>(input_img.rows) / 9) &&
+      !FloatEQ(static_cast<float>(input_img.cols) / 16, static_cast<float>(input_img.rows) / 9)) {
+    int expect_rows = static_cast<int>(static_cast<float>(input_img.cols) / 16 * 9);
+    expand_rows = 0.5f * (expect_rows - input_img.rows);
+  } else if ((static_cast<float>(input_img.cols) / 16 < static_cast<float>(input_img.rows) / 9) &&
+             !FloatEQ(static_cast<float>(input_img.cols) / 16, static_cast<float>(input_img.rows) / 9)) {
+    int expect_cols = static_cast<int>(static_cast<float>(input_img.rows) / 9 * 16);
+    expand_cols = 0.5f * (expect_cols - input_img.cols);
+  }
+  cv::copyMakeBorder(input_img, input_img, expand_rows, expand_rows, expand_cols, expand_cols, cv::BORDER_CONSTANT,
+                     cv::Scalar(123, 123, 123));
+  return input_img;
+}
+
+int Inference::Preproc(const cv::Mat &input, cv::Mat *output, const infer_server::ModelPtr &model) {
+  auto detector_input_shape = model->InputShape(0);
+  cv::Size detector_input_size = cv::Size(detector_input_shape.GetW(), detector_input_shape.GetH());
+  cv::resize(input, *output, detector_input_size);
+  output->convertTo(*output, CV_32F);
+  cv::cvtColor(*output, *output, CV_BGR2BGRA);
+  return 0;
+}
+
+bool Inference::Dopreproc(infer_server::ModelIO* dst, const infer_server::InferData& src,
+                                   const infer_server::ModelInfo& model_info) {
+  //clock_t begin, end;
+ // begin = clock();
+  auto frame = src.GetLref<cv::Mat>();
+  cv::Mat output_image;
+  if (0 != Preproc(frame, &output_image, model_ptr)) {
+    return false;
+  }
+  memcpy(dst->buffers[0].MutableData(), output_image.data, model_info.InputShape(0).DataCount() * sizeof(float));
+  //end = clock();
+ //std::cout << "preprocess time : " << double(end - begin) / CLOCKS_PER_SEC << std::endl;
+  return true;
+}
 
 bool Inference::Postprocess(const std::vector<float*> &net_outputs, 
                             const infer_server::ModelPtr &model,
@@ -20,9 +64,10 @@ bool Inference::Postprocess(const std::vector<float*> &net_outputs,
   }
 
   auto frame = reinterpret_cast<FrameOpencv*>(frame_info->datas[0].get());
-  int frame_width = frame->image_ptr->rows; // 是否包含depth
-  int frame_height = frame->image_ptr->cols;
+  int frame_width = frame->image_ptr->cols; // 是否包含depth
+  int frame_height = frame->image_ptr->rows;
   float ratio_w = float(frame_width) / float(model->InputShape(0).GetW());
+
   float ratio_h = float(frame_height) / float(model->InputShape(0).GetH());
   std::vector<AnchorGenerator> ac(_feat_stride_fpn.size());
   for (unsigned i = 0; i < _feat_stride_fpn.size(); ++i) {
@@ -31,7 +76,7 @@ bool Inference::Postprocess(const std::vector<float*> &net_outputs,
   }
   std::vector<Anchor> proposals;
   proposals.clear();
-
+  
   for (unsigned i = 0; i < _feat_stride_fpn.size(); ++i) {
     int cls_idx = i * 3;
     int reg_idx = i * 3 + 1;
@@ -47,6 +92,8 @@ bool Inference::Postprocess(const std::vector<float*> &net_outputs,
   }
   std::vector<Anchor> result;
   nms_cpu(proposals, 0.4, result);
+  auto image = frame->image_ptr.get();
+
   for (auto anchor : result) {
     // left > 45 face
     if (anchor.pts[2].x < anchor.pts[0].x) {
@@ -57,12 +104,26 @@ bool Inference::Postprocess(const std::vector<float*> &net_outputs,
       continue;
     }
     
-    frame->detect_obj.score = anchor.score;
+    std::shared_ptr<DetectObjs> obj_ptr(new DetectObjs());
+    obj_ptr->score = anchor.score;
     //obj->id = "0";
-    frame->detect_obj.x = CLIP(anchor.finalbox.x / frame_width);
-    frame->detect_obj.y = CLIP(anchor.finalbox.y / frame_height);
-    frame->detect_obj.w = CLIP(anchor.finalbox.width / frame_width) - CLIP(anchor.finalbox.x / frame_width);
-    frame->detect_obj.h = CLIP(anchor.finalbox.height / frame_height) - CLIP(anchor.finalbox.y / frame_height);
+    obj_ptr->x = CLIP(anchor.finalbox.x / frame_width);
+    obj_ptr->y = CLIP(anchor.finalbox.y / frame_height);
+    obj_ptr->w = CLIP(anchor.finalbox.width / frame_width) - CLIP(anchor.finalbox.x / frame_width);
+    obj_ptr->h = CLIP(anchor.finalbox.height / frame_height) - CLIP(anchor.finalbox.y / frame_height);
+    
+    int b_x = std::max(anchor.finalbox.y, 0.0f);
+    int b_x_ = std::min( anchor.finalbox.height, 720.0f);
+    int b_y = std::max((int)(anchor.finalbox.x), 0);
+    int b_y_ = std::min((int)( anchor.finalbox.width) , 1280);
+    
+
+    // TODO 是否需要clone处理，防止后续对图片的操作影响obj中的数据成员
+    obj_ptr->obj = (*image)(cv::Range(b_x, b_x_),cv::Range(b_y, b_y_));
+   // imshow("123", obj_ptr->obj);
+   // cv::waitKey(30);
+
+    frame->detect_objs.emplace_back(std::move(obj_ptr));
   /*
     // pts
     std::vector<float> face_pts;
@@ -137,22 +198,33 @@ bool Inference::Postprocess(const std::vector<float*> &net_outputs,
 #endif
   }
 */
-
+  }
   // add face boxes and landmarks pts to frame
-  auto image = frame->image_ptr.get();
+  
   for (size_t i = 0; i < result.size(); i++) {
-    cv::rectangle(*image, cv::Point((int)result[i].finalbox.x, (int)result[i].finalbox.y), \
+    cv::rectangle(*image, cv::Point((int)(result[i].finalbox.x), (int)(result[i].finalbox.y)), \
                   cv::Point((int)result[i].finalbox.width, (int)result[i].finalbox.height), cv::Scalar(0, 255, 255), 2, \
                   8, 0);
+    /*
+    int b_x = std::max(result[i].finalbox.y, 0.0f);
+    int b_x_ = std::min( result[i].finalbox.height, 720.0f);
+    int b_y = std::max((int)(result[i].finalbox.x), 0);
+    int b_y_ = std::min((int)( result[i].finalbox.width) , 1280);
+    
+    cv::Mat img = (*image)(cv::Range(b_x, b_x_),cv::Range(b_y, b_y_));
+    imshow("123", img);
+    cv::waitKey(30);
+    std::cout  << " x : " << result[i].finalbox.x +  result[i].finalbox.width << std::endl;
+    std::cout  << " y : " << result[i].finalbox.y + result[i].finalbox.height << std::endl;
+    */
     cv::circle(*image, result[i].pts[0], 10, cv::Scalar(0, 255, 0), -1);
     cv::circle(*image, result[i].pts[1], 10, cv::Scalar(0, 255, 0), -1);
     cv::circle(*image, result[i].pts[2], 10, cv::Scalar(0, 255, 0), -1);
     cv::circle(*image, result[i].pts[3], 10, cv::Scalar(0, 255, 0), -1);
     cv::circle(*image, result[i].pts[4], 10, cv::Scalar(0, 255, 0), -1);
   }
-  }
-  //package->datas[cnstream::CNObjsVecKey] = objs;
   
+  //package->datas[cnstream::CNObjsVecKey] = objs;
   return 0;
 
 }
@@ -189,7 +261,7 @@ bool Inference::Open(ModuleParamSet parameters) {
   } else {
     model_path = parameters["model_path"];
   }
-  return true;
+  return Init();
 }
 
 infer_server::Session_t Inference::CreateSession() {
@@ -202,17 +274,27 @@ infer_server::Session_t Inference::CreateSession() {
   desc.model = model_ptr;
   desc.host_input_layout = {infer_server::DataType::FLOAT32, infer_server::DimOrder::NHWC};
   desc.host_output_layout = {infer_server::DataType::FLOAT32, infer_server::DimOrder::NCHW};
-  desc.preproc = std::make_shared<infer_server::Postprocessor>();
- // auto preproc_func = std::bind();
-  desc.preproc->SetParams("process_function", infer_server::video::DefaultOpencvPreproc::GetFunction());
+
+  desc.preproc = std::make_shared<infer_server::PreprocessorHost>();
+  auto preproc_func = std::bind(&Inference::Dopreproc, this, std::placeholders::_1,
+                               std::placeholders::_2, std::placeholders::_3);
+  //desc.preproc->SetParams("process_function", infer_server::video::DefaultOpencvPreproc::GetFunction());
+  desc.preproc->SetParams<infer_server::PreprocessorHost::ProcessFunction>("process_function", preproc_func);
+
   auto postproc_func = std::bind(&Inference::MoveDataPostproc, this, std::placeholders::_1,
                                  std::placeholders::_2);
+  desc.postproc = std::make_shared<infer_server::Postprocessor>();
   desc.postproc->SetParams<infer_server::Postprocessor::ProcessFunction>("process_function", postproc_func);
   return server_->CreateSyncSession(desc);
 }
 
 bool Inference::Init() {
+  std::cout << __LINE__ << "in infer init function" << std::endl;
   server_.reset(new infer_server::video::VideoInferServer(dev_id));
+  if (server_ == nullptr) {
+    std::cerr << "server_ init failed !" << std::endl;
+  }
+
   model_ptr = server_->LoadModel(model_path, model_name);
 
   //create session
@@ -221,24 +303,44 @@ bool Inference::Init() {
     std::cerr << "*************create session failed!*************" << std::endl;
     return false;
   }
+  
   return true;
 }
 
 int Inference::Process(std::shared_ptr<FAFrameInfo> data) {
+  //clock_t start,end;
+ // start = clock();
+  
+
   infer_server::Status status = infer_server::Status::SUCCESS;
   infer_server::PackagePtr detect_input_package = std::make_shared<infer_server::Package>();
   detect_input_package->data.push_back(std::make_shared<infer_server::InferData>());
+  
   auto frame = reinterpret_cast<FrameOpencv*>(data->datas[0].get());
-  cv::Mat& frame_cv = *(frame->image_ptr.get());
-  detect_input_package->data[0]->Set(&frame_cv);
+  if (frame->image_ptr.get() == nullptr) std::cout << "---------******8%$#%^^&-----------" << std::endl;
+  cv::Mat frame_cv = *(frame->image_ptr.get());
+  detect_input_package->data[0]->Set(frame_cv);
+  if (frame_cv.cols == 0 || frame_cv.rows == 0) { //TODO 解码 无rows = 0 ， 传递过来rows = 0？？？
+    return 0;
+  } 
+
   //detect_input_package->tag = data_->stream_id;
   infer_server::PackagePtr detect_output_package = std::make_shared<infer_server::Package>();
+
+  //end = clock();
+  //std::cout << "getdata time: " << double(end -start) / CLOCKS_PER_SEC << std::endl;
+  
   server_->InferServer::RequestSync(session_ptr, detect_input_package, &status, detect_output_package);
+  
+  //end = clock();
+  //std::cout << "infer time: " << double(end -start) / CLOCKS_PER_SEC << std::endl;
   if (infer_server::Status::SUCCESS != status) {
-    std::cerr << "[CalculateFeature] Run detector offline model failed.";
+    std::cerr << " Run detector offline model failed.";
     return -1;
   }
   DetectCpuPostproc(detect_output_package, model_ptr, data);
+  //end = clock();
+  //std::cout << "host post time: " << double(end -start) / CLOCKS_PER_SEC << std::endl;
   return 0;
 }
 

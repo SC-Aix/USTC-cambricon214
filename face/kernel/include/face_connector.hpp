@@ -22,6 +22,7 @@ namespace facealign {
       std::vector<FramePtr> EmptyQueue();
       bool PushData(FramePtr frame);
       FramePtr GetData();
+      size_t GetCurrentSize() { return current_size_;}
 
   private:
       //std::string input_module_ = "";
