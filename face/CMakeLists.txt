@@ -51,7 +51,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -DNDEBUG -O3")
 
 set(module_list "")
 
-list(APPEND  module_list feature_extract decoder show inference)
+list(APPEND  module_list warpffine decoder show inference)
 # add head file search path
 
 find_package(OpenCV REQUIRED)

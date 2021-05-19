@@ -111,7 +111,17 @@ bool Inference::Postprocess(const std::vector<float*> &net_outputs,
     obj_ptr->y = CLIP(anchor.finalbox.y / frame_height);
     obj_ptr->w = CLIP(anchor.finalbox.width / frame_width) - CLIP(anchor.finalbox.x / frame_width);
     obj_ptr->h = CLIP(anchor.finalbox.height / frame_height) - CLIP(anchor.finalbox.y / frame_height);
-    
+
+    // save feature point
+    for (int i = 0; i < 3; ++i) {
+      cv::Point2f tmp(anchor.pts[i].x - anchor.finalbox.x, anchor.pts[i].y - anchor.finalbox.y);
+      obj_ptr->fp.emplace_back(std::move(tmp));
+    }
+    //cv::Point2f tmp((anchor.pts[3].x + anchor.pts[4].x) / 2  - anchor.finalbox.x, 
+    //                (anchor.pts[3].y + anchor.pts[4].y) / 2  - anchor.finalbox.y);
+    //obj_ptr->fp.emplace_back(std::move(tmp));
+
+
     int b_x = std::max(anchor.finalbox.y, 0.0f);
     int b_x_ = std::min( anchor.finalbox.height, 720.0f);
     int b_y = std::max((int)(anchor.finalbox.x), 0);
@@ -217,11 +227,11 @@ bool Inference::Postprocess(const std::vector<float*> &net_outputs,
     std::cout  << " x : " << result[i].finalbox.x +  result[i].finalbox.width << std::endl;
     std::cout  << " y : " << result[i].finalbox.y + result[i].finalbox.height << std::endl;
     */
-    cv::circle(*image, result[i].pts[0], 10, cv::Scalar(0, 255, 0), -1);
-    cv::circle(*image, result[i].pts[1], 10, cv::Scalar(0, 255, 0), -1);
-    cv::circle(*image, result[i].pts[2], 10, cv::Scalar(0, 255, 0), -1);
-    cv::circle(*image, result[i].pts[3], 10, cv::Scalar(0, 255, 0), -1);
-    cv::circle(*image, result[i].pts[4], 10, cv::Scalar(0, 255, 0), -1);
+   // cv::circle(*image, result[i].pts[0], 10, cv::Scalar(0, 255, 0), -1);
+   // cv::circle(*image, result[i].pts[1], 10, cv::Scalar(0, 255, 0), -1);
+   // cv::circle(*image, result[i].pts[2], 10, cv::Scalar(0, 255, 0), -1);
+   // cv::circle(*image, result[i].pts[3], 10, cv::Scalar(0, 255, 0), -1);
+    //cv::circle(*image, result[i].pts[4], 10, cv::Scalar(0, 255, 0), -1);
   }
   
   //package->datas[cnstream::CNObjsVecKey] = objs;
