@@ -18,8 +18,8 @@ int DecoderOpencv::count = 0;
    if (parameters.find("decoder_type") != parameters.end()) {
      if(parameters["decoder_type"] == "opencv")
      param.type = FFOPENCV;
-     else if (parameters["decoder_type"] == "rtsp")
-     param.type = FFRTSP;
+     else if (parameters["decoder_type"] == "codec")
+     param.type = FFCODEC;
      else {
        std::cout << "unsupport format now!" << std::endl;
        return false;
@@ -38,7 +38,7 @@ int DecoderOpencv::count = 0;
  bool Source::AddDecoder() {
    if (param.type == FFOPENCV) {
      decoder_ = new (std::nothrow) DecoderOpencv(this);
-   } else if (param.type == FFRTSP) {
+   } else if (param.type == FFCODEC) {
      
    } else {
      return false;

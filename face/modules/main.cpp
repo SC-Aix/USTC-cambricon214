@@ -22,7 +22,9 @@ int main() {
   facealign::FAModuleConfig infer_config = {
     {"infer"},
     {
-      {"model_path", "/home/suchong/workspace/face/USTC-cambricon214/face/data/model/retinaface_4c4b_bgr_270_v140.cambricon"}
+      {"model_path", "/home/suchong/workspace/face/USTC-cambricon214/face/data/model/retinaface_4c4b_bgr_270_v140.cambricon"},
+      {"preproc", "PreprocRetin"},
+      {"posproc", "PostprocRetin"}
     },
     200,
     "Inference",

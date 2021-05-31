@@ -16,14 +16,14 @@
 namespace facealign {
   enum DecoderType {
     FFOPENCV = 0,
-    FFRTSP = 1,
+    FFCODEC = 1,
     OTHRES
   };
 
   struct SourceParam {
     DecoderType type = FFOPENCV;
   };
-  
+
   class Decoder;
 
   class Source : public Module, public ModuleCreator<Source> {
@@ -36,7 +36,7 @@ namespace facealign {
     bool AddDecoder();
     void ImgLoop();
     void VideoLoop();
-    Decoder* GetDecoder() { return decoder_;}
+    Decoder* GetDecoder() { return decoder_; }
   private:
     Decoder* decoder_ = nullptr;
     SourceParam param;
@@ -55,13 +55,13 @@ namespace facealign {
 
   class DecoderOpencv : public Decoder {
   public:
-    DecoderOpencv(Source* ptr) : Decoder(ptr) { mat_ptr = std::make_shared<cv::Mat>();};
+    DecoderOpencv(Source* ptr) : Decoder(ptr) { mat_ptr = std::make_shared<cv::Mat>(); };
     void DecoderImg(const std::string& path) override;
     std::shared_ptr<FAFrame> CreateFrame() override;
     virtual void ImgLoop() override;
-    static void GetFiles(const std::string& path, std::vector<std::string> &files);
-    void AddFiles(const std::string &path) { GetFiles(path, files);}
-    void DecoderVideo(const std::string &path);
+    static void GetFiles(const std::string& path, std::vector<std::string>& files);
+    void AddFiles(const std::string& path) { GetFiles(path, files); }
+    void DecoderVideo(const std::string& path);
     void VideoLoop() override;
   private:
     static int count;
@@ -69,7 +69,7 @@ namespace facealign {
     std::vector<std::string> files;
   };
 
-  
+
   /*
     class SourceHandler {
       public:

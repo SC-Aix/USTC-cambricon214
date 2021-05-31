@@ -51,7 +51,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -DNDEBUG -O3")
 
 set(module_list "")
 
-list(APPEND  module_list warpffine decoder show inference)
+list(APPEND  module_list warpffine decoder show inference utils)
 # add head file search path
 
 find_package(OpenCV REQUIRED)
@@ -71,6 +71,14 @@ endforeach()
 # inference postprocess
 include_directories(${PROJECT_SOURCE_DIR}/modules/inference/postproc/)
 file(GLOB_RECURSE module_src ${PROJECT_SOURCE_DIR}/modules/inference/postproc/*.cpp)
+list(APPEND srcs ${module_src})
+
+# inference postprocess
+include_directories(${PROJECT_SOURCE_DIR}/modules/inference/preproc/)
+file(GLOB_RECURSE module_src ${PROJECT_SOURCE_DIR}/modules/inference/preproc/*.cpp)
+list(APPEND srcs ${module_src})
+
+message("${srcs}")
 
 include_directories(${PROJECT_SOURCE_DIR}/kernel/include)
 include_directories(${PROJECT_SOURCE_DIR}/kernel/utils)

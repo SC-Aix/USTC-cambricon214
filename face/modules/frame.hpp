@@ -34,7 +34,6 @@ namespace facealign {
   };
 
   class FrameOpencv : public FAFrame {
-
   public:
     explicit FrameOpencv(std::shared_ptr<cv::Mat> ptr) : image_ptr(ptr) {
       size_ = image_ptr->rows * image_ptr->cols

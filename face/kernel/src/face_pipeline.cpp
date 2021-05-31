@@ -93,8 +93,9 @@ namespace facealign {
         for (int i = 0; i < 8; ++i) {
           threads_.push_back(std::thread(&Pipeline::TaskLoop, this, it.first));
         }
-      } else 
-      threads_.push_back(std::thread(&Pipeline::TaskLoop, this, it.first)); // 这个this 是做什么用的呢。
+      }
+      else
+        threads_.push_back(std::thread(&Pipeline::TaskLoop, this, it.first)); // 这个this 是做什么用的呢。
     }
 
     std::cout << "Pipeline Start" << std::endl;
@@ -143,8 +144,8 @@ namespace facealign {
         //std::cout << connector->GetCurrentSize() << "--88888888888888888" << module_name << std::endl;
       }
 
-     // end = clock();
-     // std::cout << module_name <<  " getdata time: " << double(end -start)/ CLOCKS_PER_SEC << std::endl;
+      // end = clock();
+      // std::cout << module_name <<  " getdata time: " << double(end -start)/ CLOCKS_PER_SEC << std::endl;
 
       if (connector->IsStop()) {
         break;
@@ -157,8 +158,8 @@ namespace facealign {
         std::cout << module_name << " process data failed!" << std::endl;
         return;
       }
-     // end = clock();
-     // std::cout << module_name <<  " process time: " << double(end -start) /CLOCKS_PER_SEC << std::endl;
+      // end = clock();
+      // std::cout << module_name <<  " process time: " << double(end -start) /CLOCKS_PER_SEC << std::endl;
     }
     return;
   }
