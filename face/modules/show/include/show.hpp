@@ -6,6 +6,7 @@
 
 #include "face_pipeline.hpp"
 #include "face_module.hpp"
+#include "time.h"
 #include "frame.hpp"
 
 namespace facealign {
@@ -17,6 +18,9 @@ class Show : public Module, public ModuleCreator<Show> {
     bool Open(ModuleParamSet parameters) override { return true; };
     void Close() override {};
     int Process(std::shared_ptr<FAFrameInfo> data) override;
+    
+    // clock_t begin = clock();
+    // int count = 0;
 };
 
 }

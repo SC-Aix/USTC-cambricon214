@@ -66,6 +66,7 @@ namespace facealign {
     std::vector<std::shared_ptr<Module>> modules_open;
     bool open_failed = false;
     for (auto& it : modules_map) {
+      LeftMove();
       if (!it.second->Open(GetModuleParamSet(it.second->GetName()))) {
         open_failed = true;
         std::cout << "Open Module failed !--------------" << std::endl;
@@ -89,15 +90,15 @@ namespace facealign {
     }
 
     for (auto& it : modules_conector_) {
-      if (it.first == "infer") {
-        for (int i = 0; i < 8; ++i) {
-          threads_.push_back(std::thread(&Pipeline::TaskLoop, this, it.first));
-        }
-      }
-      else
+      // if (it.first == "infer") {
+      //   for (int i = 0; i < 8; ++i) {
+      //     threads_.push_back(std::thread(&Pipeline::TaskLoop, this, it.first));
+      //   }
+      // }
+      // else
         threads_.push_back(std::thread(&Pipeline::TaskLoop, this, it.first)); // 这个this 是做什么用的呢。
     }
-
+    observer_ = std::make_shared<Observer>(this);
     std::cout << "Pipeline Start" << std::endl;
     std::cout << "All modules, except the first module, total  threads  is: " << threads_.size() << std::endl;
     return true;
@@ -113,8 +114,6 @@ namespace facealign {
       }
     }
 
-    running.store(false);
-
     for (std::thread& it : threads_) {
       if (it.joinable())it.join();
     }
@@ -124,7 +123,9 @@ namespace facealign {
     for (auto& it : modules_map) {
       it.second->Close();
     }
+    running.store(false);
     return true;
+    
   }
 
   void Pipeline::TaskLoop(std::string module_name) {
@@ -241,6 +242,7 @@ namespace facealign {
     return 0;
   }
 
+
   int Pipeline::BuildPipelineByJSONFile(const std::string& config_file) {
     std::vector<FAModuleConfig> configs;
     bool ret = ConfigsFromJsonFile(config_file, configs);
@@ -250,8 +252,11 @@ namespace facealign {
     return BuildPipeline(configs);
   }
 
-
-
+  void Pipeline::RightMove() {
+    run_id &= run_id >> 1;
+    std::cout << "runid ------------------ : " << run_id << std::endl;
+    if(run_id == 1)observer_->SetStopTrue();
+  }
 
 
 

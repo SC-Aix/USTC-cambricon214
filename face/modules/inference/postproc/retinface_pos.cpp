@@ -1,10 +1,12 @@
 #include "retinface_pos.hpp"
-
+#include "face_threadpool.hpp"
 
 namespace facealign {
 #define CLIP(x) ((x) < 0 ? 0 : ((x) > 1 ? 1 : (x)))
 
-bool PostprocRetin::Postprocess(const std::vector<float*> &net_outputs, 
+IMPLEMENT_REFLEX_OBJECT(PostprocRetin);
+
+bool  PostRetinObs::Postprocess(const std::vector<float*> &net_outputs, 
                             const infer_server::ModelPtr &model,
                             std::shared_ptr<FAFrameInfo> frame_info) {
   if (net_outputs.size() != 9) {
@@ -16,8 +18,8 @@ bool PostprocRetin::Postprocess(const std::vector<float*> &net_outputs,
   int frame_width = frame->image_ptr->cols; // 是否包含depth
   int frame_height = frame->image_ptr->rows;
   float ratio_w = float(frame_width) / float(model->InputShape(0).GetW());
-
   float ratio_h = float(frame_height) / float(model->InputShape(0).GetH());
+
   std::vector<AnchorGenerator> ac(_feat_stride_fpn.size());
   for (unsigned i = 0; i < _feat_stride_fpn.size(); ++i) {
     int stride = _feat_stride_fpn[i];
@@ -111,24 +113,73 @@ bool PostprocRetin::Postprocess(const std::vector<float*> &net_outputs,
 
 }
 
+// int PostprocRetin::Execute(infer_server::PackagePtr package, const infer_server::ModelPtr& model_info, 
+//                            std::vector<std::shared_ptr<FAFrameInfo>> data_) {
+//   std::vector<std::vector<float>> one_output;
+//   std::vector<float*> net_outputs_ptr;
+//   for (auto one_img_data : package->data) {
+//     for (size_t output_number_idx = 0; output_number_idx < model_info->OutputNum(); output_number_idx++) {
+//       infer_server::ModelIO model_output = infer_server::any_cast<infer_server::ModelIO>(one_img_data->data);
+//       float* net_output = reinterpret_cast<float*>(model_output.buffers[output_number_idx].MutableData());
+//       float* tmp_ptr = new float[model_info->OutputShape(output_number_idx).DataCount() * sizeof(float)];
+//       memcpy(tmp_ptr, net_output, model_info->OutputShape(output_number_idx).DataCount() * sizeof(float));
+//       std::shared_ptr<float*> tmp = std::make_shared<float*>(tmp_ptr);
+//       net_outputs_ptr.push_back(tmp_ptr);
+//     }
+//   }
+//   Postprocess(net_outputs_ptr, model_info, data_);
+
+//   return true;
+// }
 
 
-int PostprocRetin::Execute(infer_server::PackagePtr package, const infer_server::ModelPtr& model_info, std::shared_ptr<FAFrameInfo> data_) {
-  std::vector<std::vector<float>> one_output;
+bool PostRetinObs::DoResponse(infer_server::InferDataPtr data, infer_server::ModelPtr model_info,
+  std::shared_ptr<FAFrameInfo> data_) {
+
   std::vector<float*> net_outputs_ptr;
-  for (auto one_img_data : package->data) {
-    for (size_t output_number_idx = 0; output_number_idx < model_info->OutputNum(); output_number_idx++) {
-      infer_server::ModelIO model_output = infer_server::any_cast<infer_server::ModelIO>(one_img_data->data);
-      float* net_output = reinterpret_cast<float*>(model_output.buffers[output_number_idx].MutableData());
-      float* tmp_ptr = new float[model_info->OutputShape(output_number_idx).DataCount() * sizeof(float)];
-      memcpy(tmp_ptr, net_output, model_info->OutputShape(output_number_idx).DataCount() * sizeof(float));
-      std::shared_ptr<float*> tmp = std::make_shared<float*>(tmp_ptr);
-      net_outputs_ptr.push_back(tmp_ptr);
-    }
+  for (size_t output_number_idx = 0; output_number_idx < model_info->OutputNum(); output_number_idx++) {
+   
+    infer_server::ModelIO model_output = infer_server::any_cast<infer_server::ModelIO>(data->data);
+
+    float* net_output = reinterpret_cast<float*>(model_output.buffers[output_number_idx].MutableData());
+    float* tmp_ptr = new float[model_info->OutputShape(output_number_idx).DataCount() * sizeof(float)];
+    memcpy(tmp_ptr, net_output, model_info->OutputShape(output_number_idx).DataCount() * sizeof(float));
+    std::shared_ptr<float*> tmp = std::make_shared<float*>(tmp_ptr);
+    net_outputs_ptr.push_back(tmp_ptr);
   }
-  Postprocess(net_outputs_ptr, model_info, data_);
+  Postprocess(std::move(net_outputs_ptr), model_info, data_);
 
   return true;
 }
+
+ void PostRetinObs::Response(infer_server::Status status, 
+                             infer_server::PackagePtr data,
+                             infer_server::any user_data) noexcept {
+    if (status != infer_server::Status::SUCCESS) {
+      std::cerr << "erro occurs in response" << std::endl;
+    }
+    std::vector<std::future<bool>> res;
+    std::vector<std::shared_ptr<FAFrameInfo>> frame_info_array 
+      = infer_server::any_cast<std::vector<std::shared_ptr<FAFrameInfo>>>(user_data);
+    //DoResponse(data->data[0], infer_ptr->model_ptr, frame_info_array[0]);
+    for (size_t i = 0; i < data->data.size(); ++i) {
+      res.emplace_back(
+        tp->Push(&PostRetinObs::DoResponse, this, data->data[i], infer_ptr->model_ptr, frame_info_array[i])
+        );
+    }
+
+    try {
+      for (auto& fu : res) {
+        fu.wait();
+        fu.get();
+      }
+    } catch (std::exception& e) {
+      std::cout << "------------------_______________: "  << e.what() << std::endl;
+    }
+
+    for (auto s: frame_info_array) {
+      infer_ptr->Transmit(s);
+    }
+ }
 
 }

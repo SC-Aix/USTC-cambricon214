@@ -10,7 +10,6 @@
 #include "video_helper.h"
 #include "opencv_frame.h"
 
-#include "preprocess_base.hpp"
 namespace facealign {
   class PreprocRetin : public Preproc {
     public:
@@ -21,7 +20,6 @@ namespace facealign {
                                    const infer_server::ModelInfo& model_info) override;
       DECLARE_REFLEX_OBJECT(PreprocRetin);
   };
-  IMPLEMENT_REFLEX_OBJECT(PreprocRetin);
 }
 
 

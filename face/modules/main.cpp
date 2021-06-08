@@ -1,11 +1,12 @@
-#include <iostream> 
+#include <iostream>
+#include <chrono>
 #include "face_pipeline.hpp"
 #include "source.hpp"
 
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-
-
+using namespace std;
+using namespace chrono;
 int main() {
 
   facealign::Pipeline pipeline("name");
@@ -48,6 +49,7 @@ int main() {
     "Show",
     {}
   };
+  auto start = system_clock::now();
 
   pipeline.BuildPipeline({ source_config, infer_config, warp_config, show_config });
   //pipeline.BuildPipeline({source_config, infer_config});
@@ -59,7 +61,13 @@ int main() {
   auto decoder_ = dynamic_cast<facealign::DecoderOpencv*>(source_->GetDecoder());
   decoder_->AddFiles("/home/suchong/workspace/face/USTC-cambricon214/face/data/video/");
   decoder_->VideoLoop();
-  std::this_thread::sleep_for(std::chrono::seconds(20));
-  pipeline.Stop();
+  //std::this_thread::sleep_for(std::chrono::seconds(10));
+  while(pipeline.IsRunning()) {}
+auto end   = system_clock::now();
+auto duration = duration_cast<microseconds>(end - start);
+cout <<  "花费了" 
+     << double(duration.count()) * microseconds::period::num / microseconds::period::den 
+     << "秒" << endl;
+ pipeline.Stop();
 
 }

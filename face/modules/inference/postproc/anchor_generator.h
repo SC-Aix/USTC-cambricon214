@@ -30,10 +30,10 @@
 #if (CV_MAJOR_VERSION >= 3)
 #include "opencv2/imgcodecs/imgcodecs.hpp"
 #endif
-//#include "postproc.hpp"
+ //#include "postproc.hpp"
 
 class AnchorCfg {
- public:
+public:
   std::vector<float> SCALES;
   std::vector<float> RATIOS;
   int BASE_SIZE;
@@ -68,12 +68,12 @@ extern std::map<int, AnchorCfg> anchor_cfg;
 //};
 
 typedef struct feature_map {
-  float *dataPtr;
+  float* dataPtr;
   infer_server::Shape shape;
 } FeatureMap;
 
 class CRect2f {
- public:
+public:
   CRect2f(float x1, float y1, float x2, float y2) {
     val[0] = x1;
     val[1] = y1;
@@ -81,7 +81,7 @@ class CRect2f {
     val[3] = y2;
   }
 
-  float &operator[](int i) { return val[i]; }
+  float& operator[](int i) { return val[i]; }
 
   float operator[](int i) const { return val[i]; }
 
@@ -91,16 +91,16 @@ class CRect2f {
 };  // class CRect2f
 
 class Anchor {
- public:
+public:
   Anchor() {}
 
   ~Anchor() {}
 
-  bool operator<(const Anchor &t) const { return score < t.score; }
+  bool operator<(const Anchor& t) const { return score < t.score; }
 
-  bool operator>(const Anchor &t) const { return score > t.score; }
+  bool operator>(const Anchor& t) const { return score > t.score; }
 
-  float &operator[](int i) {
+  float& operator[](int i) {
     assert(0 <= i && i <= 4);
 
     if (i == 0) return finalbox.x;
@@ -139,16 +139,16 @@ class Anchor {
 };  // class Anchor
 
 class AnchorGenerator {
- public:
+public:
   AnchorGenerator();
   ~AnchorGenerator();
 
   // init different anchors
-  int Init(int stride, const AnchorCfg &cfg, bool dense_anchor);
+  int Init(int stride, const AnchorCfg& cfg, bool dense_anchor);
 
   // anchor plane
-  int Generate(int fwidth, int fheight, int stride, float step, std::vector<int> &size, std::vector<float> &ratio,
-               bool dense_anchor);
+  int Generate(int fwidth, int fheight, int stride, float step, std::vector<int>& size, std::vector<float>& ratio,
+    bool dense_anchor);
 
   // filter anchors and return valid anchors
   // int FilterAnchor(const caffe::Blob<float>* cls, const caffe::Blob<float>* reg,
@@ -160,21 +160,21 @@ class AnchorGenerator {
   // const caffe::Blob<float> *pts, std::vector<Anchor>& result,float ratio_w,float ratio_h,float
   // confidence_threshold);
 
-  int FilterAnchor(const FeatureMap *cls, const FeatureMap *reg, const FeatureMap *pts, std::vector<Anchor> &result,
-                   float ratio_w, float ratio_h, float confidence_threshold);
+  int FilterAnchor(const FeatureMap* cls, const FeatureMap* reg, const FeatureMap* pts, std::vector<Anchor>& result,
+    float ratio_w, float ratio_h, float confidence_threshold);
 
-  int FilterAnchor(const float *cls, const float *reg, const float *pts, std::vector<Anchor> &result, int featmap_w,
-                   int featmap_h, float ratio_w, float ratio_h, float confidence_threshold);
+  int FilterAnchor(const float* cls, const float* reg, const float* pts, std::vector<Anchor>& result, int featmap_w,
+    int featmap_h, float ratio_w, float ratio_h, float confidence_threshold);
 
- private:
-  void _ratio_enum(const CRect2f &anchor, const std::vector<float> &ratios, std::vector<CRect2f> &ratio_anchors);
+private:
+  void _ratio_enum(const CRect2f& anchor, const std::vector<float>& ratios, std::vector<CRect2f>& ratio_anchors);
 
-  void _scale_enum(const std::vector<CRect2f> &ratio_anchor, const std::vector<float> &scales,
-                   std::vector<CRect2f> &scale_anchors);
+  void _scale_enum(const std::vector<CRect2f>& ratio_anchor, const std::vector<float>& scales,
+    std::vector<CRect2f>& scale_anchors);
 
-  void bbox_pred(const CRect2f &anchor, const CRect2f &delta, cv::Rect_<float> &box);
+  void bbox_pred(const CRect2f& anchor, const CRect2f& delta, cv::Rect_<float>& box);
 
-  void landmark_pred(const CRect2f anchor, const std::vector<cv::Point2f> &delta, std::vector<cv::Point2f> &pts);
+  void landmark_pred(const CRect2f anchor, const std::vector<cv::Point2f>& delta, std::vector<cv::Point2f>& pts);
 
   std::vector<std::vector<Anchor>> anchor_planes;  // corrspont to channels
 
@@ -192,6 +192,6 @@ class AnchorGenerator {
   float ratioh = 0.0;
 };  // class AnchorGenerator
 
-extern void nms_cpu(std::vector<Anchor> &boxes, float threshold, std::vector<Anchor> &filterOutBoxes);
+extern void nms_cpu(std::vector<Anchor>& boxes, float threshold, std::vector<Anchor>& filterOutBoxes);
 
 #endif  // ANCHOR_GENERTOR_H_

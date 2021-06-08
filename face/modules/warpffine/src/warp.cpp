@@ -2,6 +2,11 @@
 
 namespace facealign {
   int OpencvWarp::Process(std::shared_ptr<FAFrameInfo> data) {
+    if (data->IsEos()) {
+     RwLockWriteGuard lk(container_lock_);
+     this->container_->RightMove();
+     return 0;
+   }
     auto frame = reinterpret_cast<FrameOpencv*>(data->datas[0].get());
     if (frame->detect_objs.empty()) return 0;
     GetTransFormMatrix(data);

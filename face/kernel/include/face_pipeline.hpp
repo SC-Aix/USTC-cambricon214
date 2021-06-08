@@ -16,12 +16,13 @@
 #include "face_frame.hpp"
 #include "face_connector.hpp"
 #include "face_config.hpp"
+#include "face_observer.hpp"
 
 namespace facealign {
 enum StreamMsgType {
   EOS_MSG = 0,     ///< The end of a stream message. The stream has received EOS message in all modules.
   ERROR_MSG,       ///< An error message. The stream process has failed in one of the modules.
-  STREAM_ERR_MSG,  ///< Stream error message, stream process failed at source.
+ // STREAM_ERR_MSG,  ///< Stream error message, stream process failed at source.
   FRAME_ERR_MSG,   ///< Frame error message, frame decode failed at source.
 };
 
@@ -57,12 +58,12 @@ class StreamMsgObserver {
 /**
  * The link status between modules.
  */
-struct LinkStatus {   // todo 具体的使用方法？
-  bool stopped;    ///< Whether the data transmissions between the modules are stopped.
-  std::vector<uint32_t> cache_size; ///< The size of each queue that is used to cache data between modules.
-};
+// struct LinkStatus {   // todo 具体的使用方法？
+//   bool stopped;    ///< Whether the data transmissions between the modules are stopped.
+//   std::vector<uint32_t> cache_size; ///< The size of each queue that is used to cache data between modules.
+// };
 
-static constexpr uint32_t MAX_STREAM_NUM = 64;
+// static constexpr uint32_t MAX_STREAM_NUM = 64;
 
 /**
  * @brief ModuleId&StreamIdx manager for pipeline.
@@ -87,6 +88,7 @@ class IdxManager {
 };
 */
 
+class Observer;
 class Pipeline : private NonCopyable {
  public:
   explicit Pipeline(const std::string& name);
@@ -114,6 +116,10 @@ class Pipeline : private NonCopyable {
   inline void RegisterCallback(std::function<void(std::shared_ptr<FAFrameInfo>)> callback) {
     frame_done_callback_ = std::move(callback); //这里为什么用move？？？？
   }
+  void RightMove();
+  void LeftMove() {
+    run_id |= run_id << 1;
+  }
 
   struct ConnectorInfo {
     std::vector<std::string> input_connectors;
@@ -127,6 +133,8 @@ class Pipeline : private NonCopyable {
 
   std::atomic<bool> running {false};
  private:
+  std::shared_ptr<Observer> observer_ = nullptr;
+  uint32_t run_id = 1;
   std::string name_;
   std::vector<std::thread> threads_;
   std::unordered_map<std::string, std::shared_ptr<Module>> modules_map;

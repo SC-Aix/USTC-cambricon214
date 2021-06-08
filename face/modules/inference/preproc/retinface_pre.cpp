@@ -1,6 +1,8 @@
 #include "retinface_pre.hpp"
 
 namespace facealign {
+  IMPLEMENT_REFLEX_OBJECT(PreprocRetin);
+  
   static bool FloatEQ(float a, float b) { return std::abs(a - b) < 1E-5; }
   cv::Mat PreprocRetin::ExpandImage(cv::Mat input_img) {
     // expand input image to 16:9

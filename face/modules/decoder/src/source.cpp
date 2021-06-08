@@ -30,7 +30,11 @@ int DecoderOpencv::count = 0;
  }
 
  int Source::Process(std::shared_ptr<FAFrameInfo> data) {
-  // std::cout << "this is source module, Process be invoke!" << std::endl;
+   if (data->IsEos()) {
+     RwLockWriteGuard lk(container_lock_);
+     this->container_->RightMove();
+     return 0;
+   }
    return 0;
  }
 
@@ -119,6 +123,9 @@ void DecoderOpencv::DecoderVideo(const std::string& path) {
     source_module->DoProcess(frameinfo);
   }
   
+  auto frameinfo = FAFrameInfo::Create(true);
+  source_module->DoProcess(frameinfo);
+
   cap.release();
 }
 

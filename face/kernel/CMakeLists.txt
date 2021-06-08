@@ -12,6 +12,7 @@ foreach(module ${kernel_list})
   message("-------------------${kernel_src}")
   list(APPEND k_srcs ${kernel_src})
 endforeach()
+  list(APPEND k_srcs ${PROJECT_SOURCE_DIR}/kernel/utils/face_threadpool.hpp)
 include_directories(${PROJECT_SOURCE_DIR}/modules/)
 add_library(face_kernel SHARED ${k_srcs})
 

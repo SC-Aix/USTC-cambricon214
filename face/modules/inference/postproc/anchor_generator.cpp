@@ -22,7 +22,7 @@
 #include <iostream>
 
 const unsigned _feat_stride_num = 3;
-std::vector<int> _feat_stride_fpn = {32, 16, 8};
+std::vector<int> _feat_stride_fpn = { 32, 16, 8 };
 std::map<int, AnchorCfg> anchor_cfg = {
   {32, AnchorCfg(std::vector<float>{32, 16}, std::vector<float>{1}, 16)},
   {16, AnchorCfg(std::vector<float>{8, 4}, std::vector<float>{1}, 16)},
@@ -34,7 +34,7 @@ AnchorGenerator::AnchorGenerator() {}
 AnchorGenerator::~AnchorGenerator() {}
 
 // init different anchors
-int AnchorGenerator::Init(int stride, const AnchorCfg &cfg, bool dense_anchor) {
+int AnchorGenerator::Init(int stride, const AnchorCfg& cfg, bool dense_anchor) {
   CRect2f base_anchor(0, 0, cfg.BASE_SIZE - 1, cfg.BASE_SIZE - 1);  // (0,0,15,15)
   std::vector<CRect2f> ratio_anchors;
   // get ratio anchors
@@ -163,9 +163,9 @@ int AnchorGenerator::FilterAnchor(const caffe::Blob<float>* cls, const caffe::Bl
 }
 */
 
-int AnchorGenerator::FilterAnchor(const FeatureMap *cls, const FeatureMap *reg, const FeatureMap *pts,
-                                  std::vector<Anchor> &result, float ratio_w, float ratio_h,
-                                  float confidence_threshold) {
+int AnchorGenerator::FilterAnchor(const FeatureMap* cls, const FeatureMap* reg, const FeatureMap* pts,
+  std::vector<Anchor>& result, float ratio_w, float ratio_h,
+  float confidence_threshold) {
   ratiow = ratio_w;
   ratioh = ratio_h;
   assert(static_cast<unsigned int>(cls->shape.GetC()) == anchor_num * 2);  // anchor_num=2
@@ -182,9 +182,9 @@ int AnchorGenerator::FilterAnchor(const FeatureMap *cls, const FeatureMap *reg, 
   int h = cls->shape.GetH();
   int step = h * w;
 
-  const float *clsData = cls->dataPtr;
-  const float *regData = reg->dataPtr;
-  const float *ptsDate = pts->dataPtr;
+  const float* clsData = cls->dataPtr;
+  const float* regData = reg->dataPtr;
+  const float* ptsDate = pts->dataPtr;
 
   for (int i = 0; i < w; ++i) {
     for (int j = 0; j < h; ++j) {
@@ -193,10 +193,10 @@ int AnchorGenerator::FilterAnchor(const FeatureMap *cls, const FeatureMap *reg, 
         if (clsData[(anchor_num + a) * step + id] > confidence_threshold) {
           // std::cout <<"score: "<< clsData[(anchor_num + a)*step + id] << std::endl;
           CRect2f box(i * anchor_stride + preset_anchors[a][0], j * anchor_stride + preset_anchors[a][1],
-                      i * anchor_stride + preset_anchors[a][2], j * anchor_stride + preset_anchors[a][3]);
+            i * anchor_stride + preset_anchors[a][2], j * anchor_stride + preset_anchors[a][3]);
 
           CRect2f delta(regData[(a * 4 + 0) * step + id], regData[(a * 4 + 1) * step + id],
-                        regData[(a * 4 + 2) * step + id], regData[(a * 4 + 3) * step + id]);
+            regData[(a * 4 + 2) * step + id], regData[(a * 4 + 3) * step + id]);
           Anchor res;
           res.anchor = cv::Rect_<float>(box[0], box[1], box[2], box[3]);
           bbox_pred(box, delta, res.finalbox);
@@ -221,9 +221,9 @@ int AnchorGenerator::FilterAnchor(const FeatureMap *cls, const FeatureMap *reg, 
   return 0;
 }
 
-int AnchorGenerator::FilterAnchor(const float *cls, const float *reg, const float *pts, std::vector<Anchor> &result,
-                                  int featmap_w, int featmap_h, float ratio_w, float ratio_h,
-                                  float confidence_threshold) {
+int AnchorGenerator::FilterAnchor(const float* cls, const float* reg, const float* pts, std::vector<Anchor>& result,
+  int featmap_w, int featmap_h, float ratio_w, float ratio_h,
+  float confidence_threshold) {
   ratiow = ratio_w;
   ratioh = ratio_h;
   //    assert(cls->shape(1) == anchor_num*2);   //anchor_num=2
@@ -240,8 +240,8 @@ int AnchorGenerator::FilterAnchor(const float *cls, const float *reg, const floa
   int h = featmap_h;
   int step = h * w;
 
-  const float *clsData = cls;
-  const float *regData = reg;
+  const float* clsData = cls;
+  const float* regData = reg;
 
   //    if(pts)
   //    {
@@ -256,10 +256,10 @@ int AnchorGenerator::FilterAnchor(const float *cls, const float *reg, const floa
         if (clsData[(anchor_num + a) * step + id] > confidence_threshold) {
           // std::cout <<"score: "<< clsData[(anchor_num + a)*step + id] << std::endl;
           CRect2f box(i * anchor_stride + preset_anchors[a][0], j * anchor_stride + preset_anchors[a][1],
-                      i * anchor_stride + preset_anchors[a][2], j * anchor_stride + preset_anchors[a][3]);
+            i * anchor_stride + preset_anchors[a][2], j * anchor_stride + preset_anchors[a][3]);
 
           CRect2f delta(regData[(a * 4 + 0) * step + id], regData[(a * 4 + 1) * step + id],
-                        regData[(a * 4 + 2) * step + id], regData[(a * 4 + 3) * step + id]);
+            regData[(a * 4 + 2) * step + id], regData[(a * 4 + 3) * step + id]);
           Anchor res;
           res.anchor = cv::Rect_<float>(box[0], box[1], box[2], box[3]);
           bbox_pred(box, delta, res.finalbox);
@@ -288,8 +288,8 @@ int AnchorGenerator::FilterAnchor(const float *cls, const float *reg, const floa
   return 0;
 }
 
-void AnchorGenerator::_ratio_enum(const CRect2f &anchor, const std::vector<float> &ratios,
-                                  std::vector<CRect2f> &ratio_anchors) {
+void AnchorGenerator::_ratio_enum(const CRect2f& anchor, const std::vector<float>& ratios,
+  std::vector<CRect2f>& ratio_anchors) {
   float w = anchor[2] - anchor[0] + 1;
   float h = anchor[3] - anchor[1] + 1;
   float x_ctr = anchor[0] + 0.5 * (w - 1);
@@ -303,12 +303,12 @@ void AnchorGenerator::_ratio_enum(const CRect2f &anchor, const std::vector<float
     float ws = std::sqrt(size_ratios);
     float hs = ws * r;
     ratio_anchors.push_back(
-        CRect2f(x_ctr - 0.5 * (ws - 1), y_ctr - 0.5 * (hs - 1), x_ctr + 0.5 * (ws - 1), y_ctr + 0.5 * (hs - 1)));
+      CRect2f(x_ctr - 0.5 * (ws - 1), y_ctr - 0.5 * (hs - 1), x_ctr + 0.5 * (ws - 1), y_ctr + 0.5 * (hs - 1)));
   }
 }
 
-void AnchorGenerator::_scale_enum(const std::vector<CRect2f> &ratio_anchor, const std::vector<float> &scales,
-                                  std::vector<CRect2f> &scale_anchors) {
+void AnchorGenerator::_scale_enum(const std::vector<CRect2f>& ratio_anchor, const std::vector<float>& scales,
+  std::vector<CRect2f>& scale_anchors) {
   scale_anchors.clear();
   for (unsigned a = 0; a < ratio_anchor.size(); ++a) {
     CRect2f anchor = ratio_anchor[a];
@@ -321,12 +321,12 @@ void AnchorGenerator::_scale_enum(const std::vector<CRect2f> &ratio_anchor, cons
       float ws = w * scales[s];
       float hs = h * scales[s];
       scale_anchors.push_back(
-          CRect2f(x_ctr - 0.5 * (ws - 1), y_ctr - 0.5 * (hs - 1), x_ctr + 0.5 * (ws - 1), y_ctr + 0.5 * (hs - 1)));
+        CRect2f(x_ctr - 0.5 * (ws - 1), y_ctr - 0.5 * (hs - 1), x_ctr + 0.5 * (ws - 1), y_ctr + 0.5 * (hs - 1)));
     }
   }
 }
 
-void AnchorGenerator::bbox_pred(const CRect2f &anchor, const CRect2f &delta, cv::Rect_<float> &box) {
+void AnchorGenerator::bbox_pred(const CRect2f& anchor, const CRect2f& delta, cv::Rect_<float>& box) {
   float w = anchor[2] - anchor[0] + 1;
   float h = anchor[3] - anchor[1] + 1;
   float x_ctr = anchor[0] + 0.5 * (w - 1);
@@ -343,11 +343,11 @@ void AnchorGenerator::bbox_pred(const CRect2f &anchor, const CRect2f &delta, cv:
   float pred_h = std::exp(dh) * h;
 
   box = cv::Rect_<float>((pred_ctr_x - 0.5 * (pred_w - 1.0)) * ratiow, (pred_ctr_y - 0.5 * (pred_h - 1.0)) * ratioh,
-                         (pred_ctr_x + 0.5 * (pred_w - 1.0)) * ratiow, (pred_ctr_y + 0.5 * (pred_h - 1.0)) * ratioh);
+    (pred_ctr_x + 0.5 * (pred_w - 1.0)) * ratiow, (pred_ctr_y + 0.5 * (pred_h - 1.0)) * ratioh);
 }
 
-void AnchorGenerator::landmark_pred(const CRect2f anchor, const std::vector<cv::Point2f> &delta,
-                                    std::vector<cv::Point2f> &pts) {
+void AnchorGenerator::landmark_pred(const CRect2f anchor, const std::vector<cv::Point2f>& delta,
+  std::vector<cv::Point2f>& pts) {
   float w = anchor[2] - anchor[0] + 1;
   float h = anchor[3] - anchor[1] + 1;
   float x_ctr = anchor[0] + 0.5 * (w - 1);
@@ -360,7 +360,7 @@ void AnchorGenerator::landmark_pred(const CRect2f anchor, const std::vector<cv::
   }
 }
 
-void nms_cpu(std::vector<Anchor> &boxes, float threshold, std::vector<Anchor> &filterOutBoxes) {
+void nms_cpu(std::vector<Anchor>& boxes, float threshold, std::vector<Anchor>& filterOutBoxes) {
   filterOutBoxes.clear();
   if (boxes.size() == 0) return;
   std::vector<size_t> idx(boxes.size());

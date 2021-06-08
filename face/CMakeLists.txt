@@ -51,7 +51,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -DNDEBUG -O3")
 
 set(module_list "")
 
-list(APPEND  module_list warpffine decoder show inference utils)
+list(APPEND  module_list utils warpffine decoder show inference)
 # add head file search path
 
 find_package(OpenCV REQUIRED)
@@ -64,6 +64,7 @@ find_package(Threads)
 
 foreach(module ${module_list})
   include_directories(${PROJECT_SOURCE_DIR}/modules/${module}/include)
+  message("${PROJECT_SOURCE_DIR}/modules/${module}/include")
   file(GLOB_RECURSE module_src ${PROJECT_SOURCE_DIR}/modules/${module}/src/*.cpp)
   list(APPEND srcs ${module_src})
 endforeach()
@@ -82,7 +83,6 @@ message("${srcs}")
 
 include_directories(${PROJECT_SOURCE_DIR}/kernel/include)
 include_directories(${PROJECT_SOURCE_DIR}/kernel/utils)
-#include_directories(${PROJECT_SOURCE_DIR}/3rdparty/)
 
 include_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/include)
 include_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/infer_server/include)

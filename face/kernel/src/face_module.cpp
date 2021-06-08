@@ -90,7 +90,11 @@ namespace facealign {
         this->OnEos(data->stream_id);*/
         //if (Process(data) < 0) return -1;
     Process(data);
-    return DoTransmitData(data);/*
+    if (!HasTransmit()) 
+    return DoTransmitData(data);
+    
+    return true;
+    /*
   }
 } else {
   if (removed) {

@@ -106,17 +106,17 @@ public:
   //uint64_t GetModulesMask() const { return mask_; }
 
 
-  //bool HasTransmit() const { return hasTransmit_.load(); }
+  bool HasTransmit() const { return hasTransmit_.load(); }
 
 
   int DoProcess(std::shared_ptr<FAFrameInfo> data); // 和process 有什么区别？？
 
  protected:
-    std::string name_;
+   std::string name_;
     Rwlock container_lock_; // 这个是干嘛什么？
     Pipeline *container_;
     // 为什么用atomic？
-   // std::atomic<bool> hasTransmit_{false};  ///< Whether it has permission to transmit data.
+   std::atomic<bool> hasTransmit_{false};  ///< Whether it has permission to transmit data.
 
  private:
   // size_t id_ = INVALID_MODULE_ID;
