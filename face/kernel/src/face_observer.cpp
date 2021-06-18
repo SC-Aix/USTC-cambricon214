@@ -13,7 +13,6 @@ namespace facealign {
     watcher_ = new std::thread(&Observer::EventLoop, this);
   }
 
-
   void Observer::EventLoop() {
     while(!stop_pipeline_.load()) {}
     {

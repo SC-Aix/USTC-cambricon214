@@ -35,9 +35,12 @@ namespace facealign {
   
   int PreprocRetin::Execute(infer_server::ModelIO* dst, const infer_server::InferData& src,
     const infer_server::ModelInfo& model_info) {
-    auto frame = src.GetLref<cv::Mat>();
+    auto frame = src.GetLref<FAFrame*>();
+    if (frame->cn_pkt_ptr) {
+      frame->back_codec_buff(frame->cn_pkt_ptr->buf_id);
+    }
     cv::Mat output_image;
-    if (0 != preproc(frame, &output_image, model_info_)) {
+    if (0 != preproc(*(frame->image_ptr.get()), &output_image, model_info_)) {
       return false;
     }
     memcpy(dst->buffers[0].MutableData(), output_image.data, model_info.InputShape(0).DataCount() * sizeof(float));

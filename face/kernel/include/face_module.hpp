@@ -113,7 +113,7 @@ public:
 
  protected:
    std::string name_;
-    Rwlock container_lock_; // 这个是干嘛什么？
+    Rwlock container_lock_; 
     Pipeline *container_;
     // 为什么用atomic？
    std::atomic<bool> hasTransmit_{false};  ///< Whether it has permission to transmit data.

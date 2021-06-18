@@ -7,7 +7,7 @@ namespace facealign {
      this->container_->RightMove();
      return 0;
    }
-    auto frame = reinterpret_cast<FrameOpencv*>(data->datas[0].get());
+    auto frame = reinterpret_cast<FAFrame*>(data->datas[0].get());
     if (frame->detect_objs.empty()) return 0;
     GetTransFormMatrix(data);
     for (size_t i = 0; i < frame->detect_objs.size(); ++i) {
@@ -23,7 +23,7 @@ namespace facealign {
   }
 
   bool OpencvWarp::GetTransFormMatrix(std::shared_ptr<FAFrameInfo> data) {
-    auto frame = reinterpret_cast<FrameOpencv*>(data->datas[0].get());
+    auto frame = reinterpret_cast<FAFrame*>(data->datas[0].get());
     for (auto obj : frame->detect_objs) {
       int width = obj->obj.cols;
       int height = obj->obj.rows;

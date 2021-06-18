@@ -160,6 +160,10 @@ class InferServerRequestTest : public InferServerTestAPI {
   Session_t PrepareSession(const std::string& name, std::shared_ptr<Processor> preproc,
                            std::shared_ptr<Processor> postproc, size_t batch_timeout, BatchStrategy strategy,
                            std::shared_ptr<Observer> observer, bool cncv_used = false) {
+    if (version_ != edk::CoreVersion::MLU220 && version_ != edk::CoreVersion::MLU270) {
+      std::cerr << "Unsupport core version" << static_cast<int>(version_) << std::endl;
+      return nullptr;
+    }
     SessionDesc desc;
     desc.name = name;
     desc.model = model_;
@@ -171,21 +175,9 @@ class InferServerRequestTest : public InferServerTestAPI {
     desc.show_perf = true;
     desc.priority = 0;
     desc.host_output_layout = {infer_server::DataType::FLOAT32, infer_server::DimOrder::NCHW};
-    if (version_ == edk::CoreVersion::MLU220) {
-      desc.preproc->SetParams("src_format", PixelFmt::NV21, "dst_format", PixelFmt::ARGB, "preprocess_type",
-                              PreprocessType::SCALER);
-    } else if (version_ == edk::CoreVersion::MLU270) {
-      if (!cncv_used) {
-        desc.preproc->SetParams("src_format", PixelFmt::NV21, "dst_format", PixelFmt::ARGB, "preprocess_type",
-                                PreprocessType::RESIZE_CONVERT);
-      } else {
-        desc.preproc->SetParams("src_format", PixelFmt::NV21, "dst_format", PixelFmt::ARGB, "preprocess_type",
-                                PreprocessType::CNCV_RESIZE_CONVERT);
-      }
-    } else {
-      std::cerr << "Unsupport core version" << static_cast<int>(version_) << std::endl;
-      return nullptr;
-    }
+    auto p_type = cncv_used ? PreprocessType::CNCV_RESIZE_CONVERT : PreprocessType::RESIZE_CONVERT;
+    if (version_ == edk::CoreVersion::MLU220) p_type = PreprocessType::SCALER;
+    desc.preproc->SetParams("dst_format", PixelFmt::ARGB, "preprocess_type", p_type);
     if (observer) {
       return server_->CreateSession(desc, observer);
     } else {
@@ -214,7 +206,7 @@ class MyPostprocessor : public ProcessorForkable<MyPostprocessor> {
   MyPostprocessor() : ProcessorForkable<MyPostprocessor>("MyPostprocessor") {}
   ~MyPostprocessor() {}
   Status Process(PackagePtr pack) noexcept override {
-    if (pack->data.size() != 1) return Status::ERROR_BACKEND;
+    if (!pack->predict_io || !pack->predict_io->HasValue()) return Status::ERROR_BACKEND;
     try {
       edk::MluContext ctx;
       ctx.SetDeviceId(dev_id_);
@@ -224,12 +216,9 @@ class MyPostprocessor : public ProcessorForkable<MyPostprocessor> {
       return Status::ERROR_BACKEND;
     }
 
-    auto output = pack->data[0]->Get<ModelIO>();
-    pack->data.clear();
-    pack->data.reserve(pack->descs.size());
+    auto output = pack->predict_io->Get<ModelIO>();
     auto& shape = output.shapes[0];
-    for (uint32_t idx = 0; idx < pack->descs.size(); ++idx) {
-      pack->data.emplace_back(new InferData);
+    for (uint32_t idx = 0; idx < pack->data.size(); ++idx) {
       auto buf_size = output.buffers[0].MemorySize() / shape[0];
       Buffer buf(buf_size, dev_id_);
       buf.CopyFrom(output.buffers[0](idx * shape.DataCount()), buf_size);
@@ -264,6 +253,8 @@ TEST_F(InferServerRequestTest, EmptyPackage) {
   Session_t session =
       PrepareSession("empty package process", preproc_mlu_, postproc_, 5, BatchStrategy::DYNAMIC, observer_);
   ASSERT_NE(session, nullptr);
+
+  EXPECT_EQ(model_, server_->GetModel(session));
 
   constexpr const char* tag = "EmptyPackage";
   auto in = PrepareInput(image_path, 10);
@@ -378,11 +369,11 @@ TEST_F(InferServerRequestTest, InputContinuousData) {
   ASSERT_NE(session, nullptr);
 
   size_t data_size = 12;
-  auto in = Package::Create(1);
+  auto in = Package::Create(data_size);
   ModelIO input;
   input.buffers = model_->AllocMluInput(0);
-  in->data[0]->Set(input);
-  in->data_num = data_size;
+  in->predict_io.reset(new InferData);
+  in->predict_io->Set(input);
   Status status;
   PackagePtr output = std::make_shared<Package>();
   server_->RequestSync(session, std::move(in), &status, output);
@@ -454,15 +445,15 @@ TEST_F(InferServerRequestTest, ParallelInfer) {
   ModelIO input;
   input.buffers = model_->AllocMluInput(0);
 
-  auto in1 = Package::Create(1);
-  in1->data[0]->Set(input);
-  in1->data_num = data_size;
+  auto in1 = Package::Create(data_size);
+  in1->predict_io.reset(new InferData);
+  in1->predict_io->Set(input);
   Status status1;
   PackagePtr output1 = std::make_shared<Package>();
 
-  auto in2 = Package::Create(1);
-  in2->data[0]->Set(input);
-  in2->data_num = data_size;
+  auto in2 = Package::Create(data_size);
+  in2->predict_io.reset(new InferData);
+  in2->predict_io->Set(input);
   Status status2;
   PackagePtr output2 = std::make_shared<Package>();
 

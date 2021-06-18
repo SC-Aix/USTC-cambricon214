@@ -230,7 +230,7 @@ class ModelInfo {
 
 using ModelPtr = std::shared_ptr<ModelInfo>;
 
-struct TaskDesc;
+class RequestControl;
 
 /**
  * @brief Inference data unit
@@ -280,10 +280,48 @@ struct InferData {
     return any_cast<typename std::add_lvalue_reference<typename std::add_const<T>::type>::type>(data);
   }
 
+  /**
+   * @brief Check if InferData has value
+   *
+   * @retval true InferData has value
+   * @retval false InferData does not have value
+   */
+  bool HasValue() noexcept {
+    return data.has_value();
+  }
+
+  /**
+   * @brief Set user data for postprocess
+   *
+   * @tparam T data type
+   * @param v data value
+   */
+  template <typename T>
+  void SetUserData(T&& v) {
+    user_data = std::forward<T>(v);
+  }
+
+  /**
+   * @brief Get user data by value
+   *
+   * @note if T is lvalue reference, data is returned by lvalue reference.
+   *       if T is bare type, data is returned by value.
+   * @tparam T data type
+   * @return data
+   */
+  template <typename T>
+  T GetUserData() const {
+    return any_cast<T>(user_data);
+  }
+
   /// stored data
   any data;
+  /// user data passed to postprocessor
+  any user_data;
   /// private member
-  std::shared_ptr<TaskDesc> desc{nullptr};
+  RequestControl* ctrl{nullptr};
+  /// private member
+  uint32_t index{0};
 };
 
 using InferDataPtr = std::shared_ptr<InferData>;
@@ -296,19 +334,15 @@ struct Package {
   /// a batch of data
   BatchData data;
 
+  /// private member, intermediate storage
+  InferDataPtr predict_io{nullptr};
+
   /// tag of this package (such as stream_id, client ip, etc.)
   std::string tag;
-  /**
-   * @brief number of data stored as continuous data in `data[0]`
-   *
-   * @note works only if input is continuous data, modification in processor is undefined behavior
-   */
-  size_t data_num{1};
+
   /// perf statistics of one request
   std::map<std::string, float> perf;
 
-  /// private member
-  std::vector<std::shared_ptr<TaskDesc>> descs;
   /// private member
   int64_t priority;
 
@@ -605,6 +639,14 @@ class InferServer {
    * @param tag specified tag
    */
   void DiscardTask(Session_t session, const std::string& tag) noexcept;
+
+  /**
+   * @brief Get model from session
+   *
+   * @param session a Session
+   * @return ModelPtr A model
+   */
+  ModelPtr GetModel(Session_t session) noexcept;
 
   /* --------------------- Model API ----------------------------- */
 

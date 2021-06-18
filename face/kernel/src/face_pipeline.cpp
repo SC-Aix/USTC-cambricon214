@@ -90,7 +90,7 @@ namespace facealign {
     }
 
     for (auto& it : modules_conector_) {
-      // if (it.first == "infer") {
+      if (it.first == "source") continue;
       //   for (int i = 0; i < 8; ++i) {
       //     threads_.push_back(std::thread(&Pipeline::TaskLoop, this, it.first));
       //   }

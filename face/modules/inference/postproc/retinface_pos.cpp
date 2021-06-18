@@ -14,7 +14,7 @@ bool  PostRetinObs::Postprocess(const std::vector<float*> &net_outputs,
     return false;
   }
 
-  auto frame = reinterpret_cast<FrameOpencv*>(frame_info->datas[0].get());
+  auto frame = reinterpret_cast<FAFrame*>(frame_info->datas[0].get());
   int frame_width = frame->image_ptr->cols; // 是否包含depth
   int frame_height = frame->image_ptr->rows;
   float ratio_w = float(frame_width) / float(model->InputShape(0).GetW());
@@ -163,6 +163,9 @@ bool PostRetinObs::DoResponse(infer_server::InferDataPtr data, infer_server::Mod
       = infer_server::any_cast<std::vector<std::shared_ptr<FAFrameInfo>>>(user_data);
     //DoResponse(data->data[0], infer_ptr->model_ptr, frame_info_array[0]);
     for (size_t i = 0; i < data->data.size(); ++i) {
+      // if(frame_info_array[i]->datas[0]->cn_pkt_ptr) {
+      //   frame_info_array[i]->datas[0]->back_codec_buff(frame_info_array[i]->datas[0]->cn_pkt_ptr->buf_id);
+      // }
       res.emplace_back(
         tp->Push(&PostRetinObs::DoResponse, this, data->data[i], infer_ptr->model_ptr, frame_info_array[i])
         );

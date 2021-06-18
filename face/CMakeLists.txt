@@ -60,6 +60,17 @@ if(OpenCV_FOUND)
   include_directories(${OpenCV_INCLUDE_DIRS})
 endif()
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(FFmpeg REQUIRED)
+if (FFMPEG_FOUND)
+  include_directories(${FFMPEG_INCLUDE_DIR})
+  message(STATUS "FFmpeg Found, include: ${FFMPEG_INCLUDE_DIR}")
+  message(STATUS "FFmpeg Found, libraries: ${FFMPEG_LIBRARIES}")
+else (FFMPEG_FOUND)
+  message(FATAL_ERROR "Can not find FFmpeg libs!")
+endif (FFMPEG_FOUND)
+
+
 find_package(Threads)
 
 foreach(module ${module_list})
@@ -79,7 +90,7 @@ include_directories(${PROJECT_SOURCE_DIR}/modules/inference/preproc/)
 file(GLOB_RECURSE module_src ${PROJECT_SOURCE_DIR}/modules/inference/preproc/*.cpp)
 list(APPEND srcs ${module_src})
 
-message("${srcs}")
+list(APPEND srcs ${PROJECT_SOURCE_DIR}/modules/frame.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/kernel/include)
 include_directories(${PROJECT_SOURCE_DIR}/kernel/utils)
@@ -97,10 +108,12 @@ set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui opencv_features2d open
 
 list(APPEND srcs ${PROJECT_SOURCE_DIR}/modules/main.cpp)
 
+message("${srcs}")
+
 link_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/)
 
 add_executable(face ${srcs})
-target_link_libraries(face ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} face_kernel  ${CN_LIBS})
+target_link_libraries(face ${OpenCV_LIBS} ${FFMPEG_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} face_kernel  ${CN_LIBS})
 #target_link_libraries(face ${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/libeasydk.so)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/kernel)

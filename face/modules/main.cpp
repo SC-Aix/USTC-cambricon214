@@ -13,10 +13,12 @@ int main() {
   facealign::FAModuleConfig source_config = {
     "source",
     {
-      {"decoder_type", "opencv"}
+      {"decoder_type", "opencv"},
+      { "path", "/home/suchong/workspace/face/USTC-cambricon214/face/data/video/"}
     },
     200,
     "Source",
+   // {"show"}
     {"infer"}
   };
 
@@ -25,6 +27,7 @@ int main() {
     {
       {"model_path", "/home/suchong/workspace/face/USTC-cambricon214/face/data/model/retinaface_4c4b_bgr_270_v140.cambricon"},
       {"preproc", "PreprocRetin"},
+    //  {"preproc", "cncv"},
       {"posproc", "PostprocRetin"}
     },
     200,
@@ -53,21 +56,24 @@ int main() {
 
   pipeline.BuildPipeline({ source_config, infer_config, warp_config, show_config });
   //pipeline.BuildPipeline({source_config, infer_config});
-  //pipeline.BuildPipeline({source_config, show_config});
+ // pipeline.BuildPipeline({source_config, show_config});
   pipeline.Start();
   auto source = pipeline.GetModule("source");
   auto source_ = dynamic_cast<facealign::Source*>(source);
   source_->AddDecoder();
-  auto decoder_ = dynamic_cast<facealign::DecoderOpencv*>(source_->GetDecoder());
-  decoder_->AddFiles("/home/suchong/workspace/face/USTC-cambricon214/face/data/video/");
-  decoder_->VideoLoop();
+  source_->Run();
+  //auto decoder_ = dynamic_cast<facealign::DecoderOpencv*>(source_->GetDecoder());
+  //decoder_->AddFiles("/home/suchong/workspace/face/USTC-cambricon214/face/data/video/");
+  //decoder_->AddFiles("rtsp://192.168.81.41:8554/ae.mkv");
+  //decoder_->VideoLoop();
   //std::this_thread::sleep_for(std::chrono::seconds(10));
-  while(pipeline.IsRunning()) {}
-auto end   = system_clock::now();
-auto duration = duration_cast<microseconds>(end - start);
-cout <<  "花费了" 
-     << double(duration.count()) * microseconds::period::num / microseconds::period::den 
-     << "秒" << endl;
- pipeline.Stop();
+  while (pipeline.IsRunning()) {}
+  auto end = system_clock::now();
+  auto duration = duration_cast<microseconds>(end - start);
+  cout << "花费了"
+    << double(duration.count()) * microseconds::period::num / microseconds::period::den
+    << "秒" << endl;
+  //std::this_thread::sleep_for(1);
+  pipeline.Stop();
 
 }
