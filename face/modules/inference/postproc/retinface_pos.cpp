@@ -62,8 +62,8 @@ bool  PostRetinObs::Postprocess(const std::vector<float*> &net_outputs,
     obj_ptr->y = CLIP(anchor.finalbox.y / frame_height);
     obj_ptr->w = CLIP(anchor.finalbox.width / frame_width) - CLIP(anchor.finalbox.x / frame_width);
     obj_ptr->h = CLIP(anchor.finalbox.height / frame_height) - CLIP(anchor.finalbox.y / frame_height);
-
-    // save feature point
+    
+    // save feat  ure point
     for (int i = 0; i < 3; ++i) {
       cv::Point2f tmp(anchor.pts[i].x - anchor.finalbox.x, anchor.pts[i].y - anchor.finalbox.y);
       obj_ptr->fp.emplace_back(std::move(tmp));
@@ -74,7 +74,10 @@ bool  PostRetinObs::Postprocess(const std::vector<float*> &net_outputs,
     int b_x_ = std::min( anchor.finalbox.height, 720.0f);
     int b_y = std::max((int)(anchor.finalbox.x), 0);
     int b_y_ = std::min((int)( anchor.finalbox.width) , 1280);
-    
+    obj_ptr->rect.x = b_y;
+    obj_ptr->rect.y = b_x;
+    obj_ptr->rect.width = b_y_ - b_y;
+    obj_ptr->rect.height = b_x_ - b_x;
 
     // TODO 是否需要clone处理，防止后续对图片的操作影响obj中的数据成员
     obj_ptr->obj = (*image)(cv::Range(b_x, b_x_),cv::Range(b_y, b_y_));

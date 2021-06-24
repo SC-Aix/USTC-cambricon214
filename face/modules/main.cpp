@@ -18,8 +18,29 @@ int main() {
     },
     200,
     "Source",
-   // {"show"}
     {"infer"}
+    //{"opencvdetect"}
+  };
+
+  facealign::FAModuleConfig opencvdetect_config = {
+    "opencvdetect",
+    {
+      {"path", "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml"}
+    },
+    200,
+    "OpencvDetect",
+    {"opencvextract"}
+  };
+
+
+  facealign::FAModuleConfig opencvextract_config = {
+    "opencvextract",
+    {
+      {"path", "/home/suchong/workspace/face/USTC-cambricon214/face/data/model/lbfmodel.yaml"}
+    },
+    200,
+    "OpencvExtract",
+    {}
   };
 
   facealign::FAModuleConfig infer_config = {
@@ -32,7 +53,7 @@ int main() {
     },
     200,
     "Inference",
-    {"warp"}
+    {"opencvextract"}
   };
 
   facealign::FAModuleConfig warp_config = {
@@ -54,7 +75,8 @@ int main() {
   };
   auto start = system_clock::now();
 
-  pipeline.BuildPipeline({ source_config, infer_config, warp_config, show_config });
+ // pipeline.BuildPipeline({ source_config, infer_config, warp_config, show_config });
+  pipeline.BuildPipeline({ source_config, infer_config, opencvextract_config});
   //pipeline.BuildPipeline({source_config, infer_config});
  // pipeline.BuildPipeline({source_config, show_config});
   pipeline.Start();

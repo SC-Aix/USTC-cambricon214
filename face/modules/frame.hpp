@@ -19,6 +19,7 @@ namespace facealign {
     float h = 0.0;
     float score = 0.0;
     std::vector<cv::Point2f> fp;
+    cv::Rect rect;
     cv::Mat obj;
   };
   class FAFrame {
@@ -51,6 +52,8 @@ namespace facealign {
   public:
     std::function<void(uint64_t)> back_codec_buff = nullptr;
     std::vector<std::shared_ptr<DetectObjs>> detect_objs;
+    std::vector<std::vector<cv::Point2f>> features_points_;
+    //std::vector<cv::Rect> faces_rect;
     std::shared_ptr<cv::Mat> image_ptr = nullptr;
     std::shared_ptr<cv::Mat> detect_post_ptr = nullptr;
     std::shared_ptr<edk::CnFrame> cn_pkt_ptr = nullptr;

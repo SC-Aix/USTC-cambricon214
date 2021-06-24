@@ -10,19 +10,10 @@ project(FACE C CXX)
 
 
 set(OpenCV_FIND_QUIETLY true)
-     #find_package(OpenCV REQUIRED) //this will include opencv_ts which result in crash on centos
-#find_package(OpenCV OPTIONAL_COMPONENTS imgcodecs)
-#find_package(OpenCV OPTIONAL_COMPONENTS videoio)
-#set(optional_opencv_libs ${OpenCV_LIBS})
-find_package(OpenCV REQUIRED)
-#if(OpenCV_FOUND)
-#if(imgcodecs_FOUND)
-#  list(APPEND OpenCV_LIBS optional_opencv_libs)
-#endif()
 if(NOT DEFINED ENV{NEUWARE_HOME})
   set(ENV{NEUWARE_HOME} /usr/local/neuware)
 endif()
-message("-------------------$ENV{NEUWARE_HOME}")
+
 #if(MLU_PLATFORM STREQUAL MLU270 OR MLU_PLATFORM STREQUAL MLU220_SOC OR MLU_PLATFORM STREQUAL MLU220)
 list(APPEND CN_LIBS easydk cnis cnrt cncodec cndrv)
 #else()
@@ -45,19 +36,25 @@ else()
   set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 
-set(CMAKE_CXX_FLAGS "-fPIC -lpthread -Wall -Werror -std=c++11 ")
+set(CMAKE_CXX_FLAGS "-fPIC -lpthread -Wall -Werror -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -DNDEBUG -O3")
 
 set(module_list "")
 
-list(APPEND  module_list utils warpffine decoder show inference)
+list(APPEND  module_list utils warpffine decoder show inference opencvdetect opencvextract)
 # add head file search path
 
-find_package(OpenCV REQUIRED)
+#set(OpenCV_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../opencv/opencv_install)
+# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../opencv/opencv_install/include)
+# link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../opencv/opencv_install/lib)
+find_package(OpenCV REQUIRED core imgproc highgui features2d objdetect xobjdetect face
+              PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../opencv/opencv_install
+              NO_DEFAULT_PATH)
+#find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
-  message("Opencv found!")
-  include_directories(${OpenCV_INCLUDE_DIRS})
+   message("Opencv found! --- ${OpenCV_INCLUDE_DIRS}")
+   include_directories(${OpenCV_INCLUDE_DIRS})
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -75,7 +72,7 @@ find_package(Threads)
 
 foreach(module ${module_list})
   include_directories(${PROJECT_SOURCE_DIR}/modules/${module}/include)
-  message("${PROJECT_SOURCE_DIR}/modules/${module}/include")
+  message("${PROJECT_SOURCE_DIR}/modules/${module}/include\n")
   file(GLOB_RECURSE module_src ${PROJECT_SOURCE_DIR}/modules/${module}/src/*.cpp)
   list(APPEND srcs ${module_src})
 endforeach()
@@ -104,18 +101,17 @@ file(GLOB_RECURSE kernels ${PROJECT_SOURCE_DIR}/kernel/src/*.cpp)
 list(APPEND srcs ${module_src})
 
 
-set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui opencv_features2d opencv_flann)
+set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui opencv_features2d opencv_flann opencv_objdetect opencv_face)
 
 list(APPEND srcs ${PROJECT_SOURCE_DIR}/modules/main.cpp)
-
-message("${srcs}")
 
 link_directories(${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/)
 
 add_executable(face ${srcs})
-target_link_libraries(face ${OpenCV_LIBS} ${FFMPEG_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} face_kernel  ${CN_LIBS})
-#target_link_libraries(face ${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/libeasydk.so)
 
+target_link_libraries(face ${OpenCV_LIBS} ${OpenCV_LIBRARY_DIRS} ${FFMPEG_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} face_kernel  ${CN_LIBS})
+#target_link_libraries(face ${PROJECT_SOURCE_DIR}/3rdparty/easydk/lib/libeasydk.so)
+message("--${OpenCV_LIBS}--------${OpenCV_INCLUDE_DIRS}  ----${OpenCV_LIBRARY_DIRS}")
 add_subdirectory(${PROJECT_SOURCE_DIR}/kernel)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/easydk)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/modules)

@@ -29,7 +29,7 @@ namespace facealign {
     cv::Size detector_input_size = cv::Size(detector_input_shape.GetW(), detector_input_shape.GetH());
     cv::resize(input, *output, detector_input_size);
     output->convertTo(*output, CV_32F);
-    cv::cvtColor(*output, *output, CV_BGR2BGRA);
+    cv::cvtColor(*output, *output, cv::COLOR_BGR2BGRA);
     return 0;
   }
   
